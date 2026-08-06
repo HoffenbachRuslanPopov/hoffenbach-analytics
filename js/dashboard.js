@@ -6,6 +6,8 @@ class Dashboard {
     constructor() {
         this.charts = {};
         this.salesData = [];
+        this.currentPage = 'dashboard';
+        this.currentPeriod = 'ytd';
         this.init();
     }
 
@@ -17,6 +19,15 @@ class Dashboard {
         this.updateKPIs();
         this.loadRecentOrders();
         this.setupRefreshButton();
+        this.setupDatePicker();
+        this.setupNotifications();
+        this.setupChartPeriods();
+        this.setupViewAllButton();
+        this.setupExportButtons();
+        this.setupSettingsButtons();
+        this.setupProductSearch();
+        this.setupOrderFilter();
+        this.setupPagination();
     }
 
     setupSidebar() {
@@ -54,20 +65,396 @@ class Dashboard {
 
     setupNavigation() {
         const navItems = document.querySelectorAll('.nav-item a');
+        const pages = document.querySelectorAll('.page-content');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageSubtitle = document.getElementById('pageSubtitle');
+
+        const pageTitles = {
+            dashboard: { title: 'Dashboard', subtitle: 'Welcome back! Here\'s your sales overview.', i18nTitle: 'dashboard.title', i18nSubtitle: 'dashboard.subtitle' },
+            sales: { title: 'Sales', subtitle: 'Track your sales performance across all marketplaces.', i18nTitle: 'nav.sales', i18nSubtitle: null },
+            products: { title: 'Products', subtitle: 'Manage your product catalog and inventory.', i18nTitle: 'nav.products', i18nSubtitle: null },
+            analytics: { title: 'Analytics', subtitle: 'Deep insights into your business performance.', i18nTitle: 'nav.analytics', i18nSubtitle: null },
+            orders: { title: 'Orders', subtitle: 'View and manage all your orders.', i18nTitle: 'nav.orders', i18nSubtitle: null },
+            automation: { title: 'Automation', subtitle: 'Set up rules to automate your workflow.', i18nTitle: 'nav.automation', i18nSubtitle: null },
+            settings: { title: 'Settings', subtitle: 'Configure your dashboard preferences.', i18nTitle: 'nav.settings', i18nSubtitle: null }
+        };
 
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                const page = item.dataset.page;
+
+                // Update active nav item
                 navItems.forEach(i => i.parentElement.classList.remove('active'));
                 item.parentElement.classList.add('active');
+
+                // Show corresponding page
+                pages.forEach(p => p.classList.remove('active'));
+                const targetPage = document.getElementById(`page-${page}`);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+
+                // Update page title
+                if (pageTitle && pageTitles[page]) {
+                    const titleData = pageTitles[page];
+                    if (window.i18n) {
+                        pageTitle.textContent = window.i18n.t(titleData.i18nTitle) || titleData.title;
+                    } else {
+                        pageTitle.textContent = titleData.title;
+                    }
+                    pageTitle.dataset.i18n = titleData.i18nTitle;
+                }
+
+                if (pageSubtitle && pageTitles[page]) {
+                    pageSubtitle.textContent = pageTitles[page].subtitle;
+                    if (pageTitles[page].i18nSubtitle) {
+                        pageSubtitle.dataset.i18n = pageTitles[page].i18nSubtitle;
+                    } else {
+                        pageSubtitle.removeAttribute('data-i18n');
+                    }
+                }
+
+                // Initialize analytics charts if needed
+                if (page === 'analytics') {
+                    this.initAnalyticsCharts();
+                }
 
                 // Close mobile menu
                 const sidebar = document.getElementById('sidebar');
                 if (sidebar) {
                     sidebar.classList.remove('mobile-open');
                 }
+
+                this.currentPage = page;
             });
         });
+    }
+
+    setupDatePicker() {
+        const dateBtn = document.getElementById('dateRangeBtn');
+        const dateDropdown = document.getElementById('datePickerDropdown');
+        const dateRangeText = document.getElementById('dateRangeText');
+        const presets = document.querySelectorAll('.date-preset');
+
+        if (dateBtn && dateDropdown) {
+            dateBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dateDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dateDropdown.contains(e.target) && e.target !== dateBtn) {
+                    dateDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        presets.forEach(preset => {
+            preset.addEventListener('click', () => {
+                presets.forEach(p => p.classList.remove('active'));
+                preset.classList.add('active');
+
+                const range = preset.dataset.range;
+                const today = new Date();
+                let startDate;
+
+                switch (range) {
+                    case '7d':
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 7);
+                        dateRangeText.textContent = `${this.formatDate(startDate)} - ${this.formatDate(today)}`;
+                        break;
+                    case '30d':
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 30);
+                        dateRangeText.textContent = `${this.formatDate(startDate)} - ${this.formatDate(today)}`;
+                        break;
+                    case '90d':
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 90);
+                        dateRangeText.textContent = `${this.formatDate(startDate)} - ${this.formatDate(today)}`;
+                        break;
+                    case 'ytd':
+                        startDate = new Date(today.getFullYear(), 0, 1);
+                        dateRangeText.textContent = `${this.formatDate(startDate)} - ${this.formatDate(today)}`;
+                        break;
+                    case 'all':
+                        dateRangeText.textContent = 'All Time';
+                        break;
+                }
+
+                dateDropdown.classList.remove('show');
+                this.showToast('Date range updated');
+            });
+        });
+    }
+
+    formatDate(date) {
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    setupNotifications() {
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const notificationsDropdown = document.getElementById('notificationsDropdown');
+        const markAllRead = document.querySelector('.mark-all-read');
+        const badge = document.querySelector('.notification-badge');
+
+        if (notificationsBtn && notificationsDropdown) {
+            notificationsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationsDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!notificationsDropdown.contains(e.target) && e.target !== notificationsBtn) {
+                    notificationsDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        if (markAllRead) {
+            markAllRead.addEventListener('click', () => {
+                const unreadItems = document.querySelectorAll('.notification-item.unread');
+                unreadItems.forEach(item => item.classList.remove('unread'));
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+                this.showToast('All notifications marked as read');
+            });
+        }
+
+        // Click on notification item
+        const notificationItems = document.querySelectorAll('.notification-item');
+        notificationItems.forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.remove('unread');
+                this.updateNotificationBadge();
+            });
+        });
+    }
+
+    updateNotificationBadge() {
+        const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    setupChartPeriods() {
+        const periodButtons = document.querySelectorAll('.chart-period');
+
+        periodButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const chartActions = btn.parentElement;
+                chartActions.querySelectorAll('.chart-period').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const period = btn.dataset.period;
+                this.currentPeriod = period;
+                this.updateSalesTrendChart(period);
+            });
+        });
+    }
+
+    updateSalesTrendChart(period) {
+        if (!this.charts.salesTrend) return;
+
+        let days;
+        switch (period) {
+            case '7d': days = 7; break;
+            case '30d': days = 30; break;
+            case '90d': days = 90; break;
+            case 'ytd': days = 218; break; // Jan 1 to Aug 6
+            default: days = 30;
+        }
+
+        const data = this.generateDailyData(days);
+        const colors = this.getChartColors();
+
+        this.charts.salesTrend.data.labels = data.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        this.charts.salesTrend.data.datasets[0].data = data.map(d => d.revenue);
+        this.charts.salesTrend.update();
+
+        this.showToast(`Showing data for last ${days} days`);
+    }
+
+    setupViewAllButton() {
+        const viewAllBtn = document.getElementById('viewAllOrdersBtn');
+        if (viewAllBtn) {
+            viewAllBtn.addEventListener('click', () => {
+                // Navigate to orders page
+                const ordersNav = document.querySelector('[data-page="orders"]');
+                if (ordersNav) {
+                    ordersNav.click();
+                }
+            });
+        }
+    }
+
+    setupExportButtons() {
+        const exportSalesBtn = document.getElementById('exportSalesBtn');
+        const exportOrdersBtn = document.getElementById('exportOrdersBtn');
+
+        if (exportSalesBtn) {
+            exportSalesBtn.addEventListener('click', () => {
+                this.exportData('sales');
+            });
+        }
+
+        if (exportOrdersBtn) {
+            exportOrdersBtn.addEventListener('click', () => {
+                this.exportData('orders');
+            });
+        }
+    }
+
+    exportData(type) {
+        // Simulate export
+        this.showToast(`Exporting ${type} data...`, 'info');
+
+        setTimeout(() => {
+            this.showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} data exported successfully!`, 'success');
+        }, 1500);
+    }
+
+    setupSettingsButtons() {
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const syncNowBtn = document.getElementById('syncNowBtn');
+        const createRuleBtn = document.getElementById('createRuleBtn');
+
+        if (saveProfileBtn) {
+            saveProfileBtn.addEventListener('click', () => {
+                this.showToast('Profile settings saved!', 'success');
+            });
+        }
+
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', () => {
+                this.showToast('Password changed successfully!', 'success');
+            });
+        }
+
+        if (syncNowBtn) {
+            syncNowBtn.addEventListener('click', () => {
+                syncNowBtn.classList.add('loading');
+                syncNowBtn.disabled = true;
+
+                this.showToast('Syncing with Amazon SP API...', 'info');
+
+                setTimeout(() => {
+                    syncNowBtn.classList.remove('loading');
+                    syncNowBtn.disabled = false;
+                    this.showToast('Sync completed successfully!', 'success');
+                }, 2000);
+            });
+        }
+
+        if (createRuleBtn) {
+            createRuleBtn.addEventListener('click', () => {
+                this.showToast('Create new automation rule (coming soon)', 'info');
+            });
+        }
+    }
+
+    setupProductSearch() {
+        const searchInput = document.getElementById('productSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const products = document.querySelectorAll('.product-card');
+
+                products.forEach(product => {
+                    const name = product.querySelector('h4').textContent.toLowerCase();
+                    const sku = product.querySelector('.product-sku').textContent.toLowerCase();
+
+                    if (name.includes(query) || sku.includes(query)) {
+                        product.style.display = '';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            });
+        }
+    }
+
+    setupOrderFilter() {
+        const filterSelect = document.getElementById('orderStatusFilter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                const status = e.target.value;
+                const rows = document.querySelectorAll('#allOrdersTableBody tr');
+
+                rows.forEach(row => {
+                    const rowStatus = row.querySelector('.status-badge')?.textContent.toLowerCase();
+                    if (status === 'all' || rowStatus === status) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                this.showToast(`Filtered by: ${status === 'all' ? 'All orders' : status}`);
+            });
+        }
+    }
+
+    setupPagination() {
+        const paginationBtns = document.querySelectorAll('.pagination-btn');
+        paginationBtns.forEach(btn => {
+            if (!btn.disabled) {
+                btn.addEventListener('click', () => {
+                    paginationBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.showToast(`Page ${btn.textContent} loaded`);
+                });
+            }
+        });
+    }
+
+    showToast(message, type = 'info') {
+        // Remove existing toast
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button class="toast-close">&times;</button>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Show animation
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Close button
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        });
+
+        // Auto hide
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 3000);
     }
 
     loadDemoData() {
@@ -193,6 +580,103 @@ class Dashboard {
         this.initCountryChart();
         this.initProductsChart();
         this.initHourlyChart();
+    }
+
+    initAnalyticsCharts() {
+        // Only init if not already created
+        if (!this.charts.traffic) {
+            this.initTrafficChart();
+        }
+        if (!this.charts.device) {
+            this.initDeviceChart();
+        }
+    }
+
+    initTrafficChart() {
+        const ctx = document.getElementById('trafficChart');
+        if (!ctx) return;
+
+        const colors = this.getChartColors();
+
+        this.charts.traffic = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Amazon',
+                        data: [1200, 1350, 1100, 1450, 1600, 980, 850],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'transparent',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Direct',
+                        data: [400, 380, 420, 450, 380, 320, 280],
+                        borderColor: colors.primary,
+                        backgroundColor: 'transparent',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Social',
+                        data: [200, 250, 180, 300, 280, 220, 190],
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: colors.textSecondary }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.textSecondary }
+                    },
+                    y: {
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.textSecondary }
+                    }
+                }
+            }
+        });
+    }
+
+    initDeviceChart() {
+        const ctx = document.getElementById('deviceChart');
+        if (!ctx) return;
+
+        const colors = this.getChartColors();
+
+        this.charts.device = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Desktop', 'Mobile', 'Tablet'],
+                datasets: [{
+                    data: [55, 38, 7],
+                    backgroundColor: [colors.primary, '#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: colors.textSecondary }
+                    }
+                }
+            }
+        });
     }
 
     getChartColors() {
@@ -457,9 +941,12 @@ class Dashboard {
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
                 refreshBtn.querySelector('svg').classList.add('animate-spin');
+                this.showToast('Refreshing data...', 'info');
+
                 setTimeout(() => {
                     this.updateKPIs();
                     refreshBtn.querySelector('svg').classList.remove('animate-spin');
+                    this.showToast('Data refreshed successfully!', 'success');
                 }, 1000);
             });
         }
@@ -472,7 +959,11 @@ class Dashboard {
                 chart.destroy();
             }
         });
+        this.charts = {};
         this.initCharts();
+        if (this.currentPage === 'analytics') {
+            this.initAnalyticsCharts();
+        }
     }
 }
 
