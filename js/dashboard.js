@@ -1,5 +1,6 @@
 /* =============================================
-   DASHBOARD MODULE - FULLY INTERACTIVE
+   DASHBOARD MODULE - FULLY INTERACTIVE v2.1
+   Updated: 2026-08-06
    ============================================= */
 
 // Wait for DOM to be ready
