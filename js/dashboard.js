@@ -1212,34 +1212,65 @@ class Dashboard {
         // Get all metric checkboxes from config panel
         const checkboxes = document.querySelectorAll('.config-metric-item input[type="checkbox"]');
 
-        // Initialize active metrics from checked checkboxes
+        // Default colors for metrics
+        this.metricColors = {
+            sales: '#3b82f6',
+            units: '#6366f1',
+            orders: '#06b6d4',
+            adSpend: '#ef4444',
+            refunds: '#f97316',
+            refundCost: '#fb923c',
+            amazonFees: '#a855f7',
+            cogs: '#ec4899',
+            vat: '#14b8a6',
+            grossProfit: '#22c55e',
+            netProfit: '#8b5cf6',
+            margin: '#0ea5e9',
+            roi: '#84cc16',
+            acos: '#eab308',
+            tacos: '#f59e0b'
+        };
+
+        // Initialize active metrics from checked checkboxes or use defaults
         this.activeAsinMetrics = [];
-        this.metricColors = {};
 
-        checkboxes.forEach(checkbox => {
-            const metric = checkbox.getAttribute('data-metric');
-            const color = checkbox.getAttribute('data-color');
-            this.metricColors[metric] = color;
+        if (checkboxes.length > 0) {
+            checkboxes.forEach(checkbox => {
+                const metric = checkbox.getAttribute('data-metric');
+                const color = checkbox.getAttribute('data-color');
+                if (color) {
+                    this.metricColors[metric] = color;
+                }
 
-            if (checkbox.checked) {
-                this.activeAsinMetrics.push(metric);
-            }
-        });
+                if (checkbox.checked) {
+                    this.activeAsinMetrics.push(metric);
+                }
+            });
+        }
+
+        // Fallback to defaults if no checkboxes found or none checked
+        if (this.activeAsinMetrics.length === 0) {
+            this.activeAsinMetrics = ['units', 'adSpend', 'refunds', 'netProfit'];
+        }
 
         // Add event listeners
         checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                const metric = checkbox.getAttribute('data-metric');
-                const label = checkbox.closest('.config-metric-item');
+            // Remove old listeners by cloning
+            const newCheckbox = checkbox.cloneNode(true);
+            checkbox.parentNode.replaceChild(newCheckbox, checkbox);
 
-                if (checkbox.checked) {
+            newCheckbox.addEventListener('change', () => {
+                const metric = newCheckbox.getAttribute('data-metric');
+                const label = newCheckbox.closest('.config-metric-item');
+
+                if (newCheckbox.checked) {
                     if (!this.activeAsinMetrics.includes(metric)) {
                         this.activeAsinMetrics.push(metric);
                     }
-                    label.classList.add('active');
+                    if (label) label.classList.add('active');
                 } else {
                     this.activeAsinMetrics = this.activeAsinMetrics.filter(m => m !== metric);
-                    label.classList.remove('active');
+                    if (label) label.classList.remove('active');
                 }
 
                 // Update chart legend
