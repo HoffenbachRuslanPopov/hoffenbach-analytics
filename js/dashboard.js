@@ -24,37 +24,165 @@ class Dashboard {
         this.currentPage = 'dashboard';
         this.currentPeriod = 'ytd';
 
-        // Real sales data
+        // Real sales data from Sellerboard (2026-08-11)
         this.salesData = {
-            totalRevenue: 18571.79,
-            totalOrders: 1177,
-            totalUnits: 1234,
-            avgOrder: 15.78,
+            totalRevenue: 12186.08,
+            totalOrders: 682,
+            totalUnits: 703,
+            avgOrder: 17.87,
             byCountry: [
-                { code: 'DE', name: 'Germany', flag: '🇩🇪', revenue: 7876.51, orders: 605, units: 780 },
-                { code: 'FR', name: 'France', flag: '🇫🇷', revenue: 3723.41, orders: 215, units: 285 },
-                { code: 'GB', name: 'UK', flag: '🇬🇧', revenue: 1954.47, orders: 183, units: 210 },
-                { code: 'IT', name: 'Italy', flag: '🇮🇹', revenue: 1941.96, orders: 110, units: 145 },
-                { code: 'SE', name: 'Sweden', flag: '🇸🇪', revenue: 1399.89, orders: 11, units: 15 },
-                { code: 'ES', name: 'Spain', flag: '🇪🇸', revenue: 1217.34, orders: 81, units: 98 },
-                { code: 'NL', name: 'Netherlands', flag: '🇳🇱', revenue: 299.29, orders: 21, units: 28 },
-                { code: 'BE', name: 'Belgium', flag: '🇧🇪', revenue: 124.94, orders: 6, units: 8 },
-                { code: 'IE', name: 'Ireland', flag: '🇮🇪', revenue: 33.98, orders: 2, units: 3 }
+                { code: 'DE', name: 'Germany', flag: '🇩🇪', revenue: 12186.08, orders: 682, units: 703 }
             ],
+            // Product families with Parent/Child structure
+            productFamilies: [
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0DQV224V2',
+                    name: 'Magnetische Kindersicherung 12+3',
+                    totalUnits: 414,
+                    totalRevenue: 9101.31,
+                    children: [
+                        { asin: 'B072PPT9V3', sku: '19-LWRP-J1JZ', variant: 'Weiß', units: 145, revenue: 2982.49, price: 20.57, margin: 18.09, profit: 539.68 },
+                        { asin: 'B0DMTJXH9W', sku: 'AK-CIFP-P8X9', variant: 'Schwarz', units: 44, revenue: 911.51, price: 20.72, margin: 26.52, profit: 241.74 },
+                        { asin: 'B0DQV224V2', sku: '', variant: 'Parent', units: 225, revenue: 5207.31, price: 23.14, margin: 25.29, profit: 1316.86 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0FCXS9PDP',
+                    name: 'Steckdosen Kindersicherung 20x',
+                    totalUnits: 105,
+                    totalRevenue: 889.79,
+                    children: [
+                        { asin: 'B0854MW97N', sku: 'SH-G0PF-CSW1', variant: 'Weiß', units: 105, revenue: 889.79, price: 8.47, margin: 22.18, profit: 197.37 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0DKJWR1G1',
+                    name: 'Eckenschutz Kantenschutz 12x',
+                    totalUnits: 95,
+                    totalRevenue: 964.02,
+                    children: [
+                        { asin: 'B0933B1NKB', sku: 'E1-ZMUX-HRSF', variant: 'Schwarz', units: 44, revenue: 426.89, price: 9.70, margin: 24.20, profit: 103.30 },
+                        { asin: 'B0933F6ZWD', sku: '8P-ZYWD-VIXU', variant: 'Weiß', units: 24, revenue: 227.35, price: 9.47, margin: 23.95, profit: 54.45 },
+                        { asin: 'B0933DBFMS', sku: 'B4-8LX3-XNGZ', variant: 'Braun', units: 15, revenue: 141.77, price: 9.45, margin: 25.87, profit: 36.67 },
+                        { asin: 'B0D7QMZZDG', sku: 'VF-W02N-KLUS', variant: '20x Schwarz', units: 9, revenue: 121.31, price: 13.48, margin: 37.60, profit: 45.61 },
+                        { asin: 'B0D7QMS49B', sku: 'Uncommingled.MSKU.1722334050975', variant: '20x Weiß', units: 3, revenue: 46.70, price: 15.57, margin: 45.46, profit: 21.23 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0F9F69NZQ',
+                    name: 'Kantenschutz 6.2m + 12x Eckenschutz',
+                    totalUnits: 56,
+                    totalRevenue: 1320.29,
+                    children: [
+                        { asin: 'B0F63Q4BLX', sku: 'KG-QEAJ-H4PD', variant: 'Wollweiß', units: 30, revenue: 720.47, price: 24.02, margin: 26.06, profit: 187.77 },
+                        { asin: 'B07PPXKJPQ', sku: 'UP-185A-6YIE', variant: 'Schwarz', units: 13, revenue: 298.91, price: 22.99, margin: 13.19, profit: 39.42 },
+                        { asin: 'B0F79C4Y9C', sku: '4Q-CIIG-VD9B', variant: 'Schokoladenbraun', units: 13, revenue: 300.91, price: 23.15, margin: 32.74, profit: 98.51 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0DV5N35F7',
+                    name: 'Wandschutz Pads 4x',
+                    totalUnits: 61,
+                    totalRevenue: 596.28,
+                    children: [
+                        { asin: 'B08NCRRM6M', sku: '9J-VG9Z-P83K', variant: 'Standard', units: 61, revenue: 596.28, price: 9.78, margin: 32.13, profit: 191.60 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: 'B0FCXS84M8',
+                    name: 'Steckdosen Kindersicherung 30x',
+                    totalUnits: 50,
+                    totalRevenue: 499.52,
+                    children: [
+                        { asin: 'B0DJ1DGY6J', sku: '60-O7CT-8I0F', variant: 'Weiß', units: 50, revenue: 499.52, price: 9.99, margin: 23.08, profit: 115.28 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: null,
+                    name: 'Magnetische Kindersicherung 20+4',
+                    totalUnits: 26,
+                    totalRevenue: 869.01,
+                    children: [
+                        { asin: 'B07JZCWJMW', sku: 'GM-1QEG-0QPK', variant: 'Weiß', units: 14, revenue: 465.91, price: 33.28, margin: 39.78, profit: 185.35 },
+                        { asin: 'B0DMTMHVK4', sku: 'D6-QPG9-4J1K', variant: 'Schwarz', units: 12, revenue: 403.10, price: 33.59, margin: 39.96, profit: 161.09 }
+                    ]
+                },
+                {
+                    brand: 'Hoffenbach',
+                    parentAsin: null,
+                    name: 'Magnetische Kindersicherung 30+6',
+                    totalUnits: 10,
+                    totalRevenue: 444.30,
+                    children: [
+                        { asin: 'B0FVG9MZR8', sku: '09-6H6Q-NYOA', variant: 'Weiß', units: 8, revenue: 354.90, price: 44.36, margin: 43.55, profit: 154.57 },
+                        { asin: 'B0FVGB9FHJ', sku: 'NL-4NNP-5092', variant: 'Schwarz', units: 2, revenue: 89.40, price: 44.70, margin: 38.51, profit: 34.43 }
+                    ]
+                },
+                {
+                    brand: 'WunderHippo',
+                    parentAsin: 'B0FTMKYVR6',
+                    name: 'Magnetische Kindersicherung',
+                    totalUnits: 35,
+                    totalRevenue: 689.89,
+                    children: [
+                        { asin: 'B0DNT4FNZ9', sku: 'MC-DZIG-W9QU', variant: '12+3 Weiß', units: 34, revenue: 660.66, price: 19.43, margin: 21.20, profit: 140.07 },
+                        { asin: 'B0FNX21TZF', sku: 'ZV-XWYM-FRWL', variant: '20+4 Weiß', units: 1, revenue: 29.23, price: 29.23, margin: 37.15, profit: 10.86 }
+                    ]
+                },
+                {
+                    brand: 'WunderHippo',
+                    parentAsin: 'B0GWH7SS9R',
+                    name: 'Wandschutz Pads 4x',
+                    totalUnits: 14,
+                    totalRevenue: 124.97,
+                    children: [
+                        { asin: 'B0DNTPCLRN', sku: 'UK-P7TQ-VS08', variant: 'Standard', units: 14, revenue: 124.97, price: 8.93, margin: 26.25, profit: 32.80 }
+                    ]
+                },
+                {
+                    brand: 'SafeMate',
+                    parentAsin: 'B0GN3DM5BX',
+                    name: 'Kantenschutz 6m + 10x Eckenschutz',
+                    totalUnits: 22,
+                    totalRevenue: 406.26,
+                    children: [
+                        { asin: 'B0GGJ6VRCQ', sku: 'JZ-7QN5-JBQ4', variant: 'Mattschwarz', units: 17, revenue: 315.35, price: 18.55, margin: 29.79, profit: 93.94 },
+                        { asin: 'B0GGJ4RNBC', sku: 'VX-PB4F-4IMK', variant: 'Wollweiß', units: 5, revenue: 90.91, price: 18.18, margin: 17.92, profit: 16.29 }
+                    ]
+                }
+            ],
+            // Flat products list for backward compatibility
             products: [
-                { name: 'Magnetic Locks 20+4', asin: 'B09K3XHMLP', sku: 'D6-QPG9-4J1K', price: 29.99, sold: 151, revenue: 4528.49, stock: 245 },
-                { name: 'Socket Protectors 20x', asin: 'B09K3YN2WQ', sku: 'SH-G0PF-CSW1', price: 7.99, sold: 362, revenue: 2892.38, stock: 52 },
-                { name: 'Magnetic Locks 12+3', asin: 'B09K3ZR4MN', sku: 'XT-KL12-3SET', price: 19.99, sold: 130, revenue: 2598.70, stock: 189 },
-                { name: 'Wall Protector Pads', asin: 'B09K4ABC12', sku: '9J-VG9Z-P83K', price: 9.99, sold: 168, revenue: 1678.32, stock: 320 },
-                { name: 'Corner Protectors 12x', asin: 'B09K4DEF34', sku: 'E1-ZMUX-HRSF', price: 9.99, sold: 124, revenue: 1238.76, stock: 18 },
-                { name: 'Door Guard Set', asin: 'B09K4GHI56', sku: 'DG-4SET-BLK', price: 14.99, sold: 89, revenue: 1334.11, stock: 156 }
+                { name: 'Magnet Locks 12+3 Weiß', asin: 'B072PPT9V3', sku: '19-LWRP-J1JZ', price: 20.57, sold: 145, revenue: 2982.49, brand: 'Hoffenbach' },
+                { name: 'Magnet Locks 12+3 Schwarz', asin: 'B0DMTJXH9W', sku: 'AK-CIFP-P8X9', price: 20.72, sold: 44, revenue: 911.51, brand: 'Hoffenbach' },
+                { name: 'Steckdosen 20x Weiß', asin: 'B0854MW97N', sku: 'SH-G0PF-CSW1', price: 8.47, sold: 105, revenue: 889.79, brand: 'Hoffenbach' },
+                { name: 'Wandschutz Pads 4x', asin: 'B08NCRRM6M', sku: '9J-VG9Z-P83K', price: 9.78, sold: 61, revenue: 596.28, brand: 'Hoffenbach' },
+                { name: 'Steckdosen 30x Weiß', asin: 'B0DJ1DGY6J', sku: '60-O7CT-8I0F', price: 9.99, sold: 50, revenue: 499.52, brand: 'Hoffenbach' },
+                { name: 'Eckenschutz 12x Schwarz', asin: 'B0933B1NKB', sku: 'E1-ZMUX-HRSF', price: 9.70, sold: 44, revenue: 426.89, brand: 'Hoffenbach' },
+                { name: 'WH Magnet Locks 12+3', asin: 'B0DNT4FNZ9', sku: 'MC-DZIG-W9QU', price: 19.43, sold: 34, revenue: 660.66, brand: 'WunderHippo' },
+                { name: 'Kantenschutz 6.2m Wollweiß', asin: 'B0F63Q4BLX', sku: 'KG-QEAJ-H4PD', price: 24.02, sold: 30, revenue: 720.47, brand: 'Hoffenbach' },
+                { name: 'Eckenschutz 12x Weiß', asin: 'B0933F6ZWD', sku: '8P-ZYWD-VIXU', price: 9.47, sold: 24, revenue: 227.35, brand: 'Hoffenbach' },
+                { name: 'SM Kantenschutz Schwarz', asin: 'B0GGJ6VRCQ', sku: 'JZ-7QN5-JBQ4', price: 18.55, sold: 17, revenue: 315.35, brand: 'SafeMate' },
+                { name: 'Eckenschutz 12x Braun', asin: 'B0933DBFMS', sku: 'B4-8LX3-XNGZ', price: 9.45, sold: 15, revenue: 141.77, brand: 'Hoffenbach' },
+                { name: 'Magnet Locks 20+4 Weiß', asin: 'B07JZCWJMW', sku: 'GM-1QEG-0QPK', price: 33.28, sold: 14, revenue: 465.91, brand: 'Hoffenbach' },
+                { name: 'WH Wandschutz Pads', asin: 'B0DNTPCLRN', sku: 'UK-P7TQ-VS08', price: 8.93, sold: 14, revenue: 124.97, brand: 'WunderHippo' },
+                { name: 'Kantenschutz 6.2m Schwarz', asin: 'B07PPXKJPQ', sku: 'UP-185A-6YIE', price: 22.99, sold: 13, revenue: 298.91, brand: 'Hoffenbach' },
+                { name: 'Kantenschutz 6.2m Braun', asin: 'B0F79C4Y9C', sku: '4Q-CIIG-VD9B', price: 23.15, sold: 13, revenue: 300.91, brand: 'Hoffenbach' },
+                { name: 'Magnet Locks 20+4 Schwarz', asin: 'B0DMTMHVK4', sku: 'D6-QPG9-4J1K', price: 33.59, sold: 12, revenue: 403.10, brand: 'Hoffenbach' }
             ],
             recentOrders: [
-                { id: '306-9063696-5426752', product: 'Magnetic Locks 20+4', country: 'DE', flag: '🇩🇪', date: '2026-08-06', amount: 29.99, status: 'shipped' },
-                { id: '028-9246498-0330717', product: 'Socket Protectors 20x', country: 'DE', flag: '🇩🇪', date: '2026-08-06', amount: 7.99, status: 'shipped' },
-                { id: '203-3985502-1642757', product: 'Corner Protectors 12x', country: 'GB', flag: '🇬🇧', date: '2026-08-05', amount: 9.99, status: 'shipped' },
-                { id: '404-9151343-2417117', product: 'Magnetic Locks 20+4', country: 'FR', flag: '🇫🇷', date: '2026-08-05', amount: 29.99, status: 'pending' },
-                { id: '171-6613491-8643508', product: 'Socket Protectors 20x', country: 'NL', flag: '🇳🇱', date: '2026-08-05', amount: 9.49, status: 'shipped' }
+                { id: '306-9063696-5426752', product: 'Magnet Locks 12+3', asin: 'B072PPT9V3', country: 'DE', flag: '🇩🇪', date: '2026-08-11', amount: 20.57, status: 'shipped' },
+                { id: '028-9246498-0330717', product: 'Steckdosen 20x', asin: 'B0854MW97N', country: 'DE', flag: '🇩🇪', date: '2026-08-11', amount: 8.47, status: 'shipped' },
+                { id: '203-3985502-1642757', product: 'Eckenschutz 12x', asin: 'B0933B1NKB', country: 'DE', flag: '🇩🇪', date: '2026-08-11', amount: 9.70, status: 'shipped' },
+                { id: '404-9151343-2417117', product: 'Wandschutz Pads', asin: 'B08NCRRM6M', country: 'DE', flag: '🇩🇪', date: '2026-08-11', amount: 9.78, status: 'pending' },
+                { id: '171-6613491-8643508', product: 'Kantenschutz 6.2m', asin: 'B0F63Q4BLX', country: 'DE', flag: '🇩🇪', date: '2026-08-11', amount: 24.02, status: 'shipped' }
             ]
         };
 
@@ -70,9 +198,11 @@ class Dashboard {
         this.setupChartPeriods();
         this.setupButtons();
         this.setupSearch();
+        this.setupGlobalSearch();
         this.setupFilters();
         this.updateKPIs();
         this.loadRecentOrders();
+        this.renderProducts();
         this.initCharts();
         console.log('Dashboard initialization complete');
     }
@@ -540,6 +670,134 @@ class Dashboard {
         }
     }
 
+    setupGlobalSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        const resultsContainer = document.getElementById('globalSearchResults');
+
+        if (!searchInput || !resultsContainer) return;
+
+        // Build searchable index from all products
+        const searchIndex = [];
+        this.salesData.productFamilies.forEach(family => {
+            family.children.forEach(child => {
+                searchIndex.push({
+                    name: family.name + (child.variant !== 'Parent' ? ` - ${child.variant}` : ''),
+                    asin: child.asin,
+                    sku: child.sku,
+                    brand: family.brand,
+                    units: child.units,
+                    revenue: child.revenue,
+                    price: child.price,
+                    margin: child.margin,
+                    parentAsin: family.parentAsin
+                });
+            });
+        });
+
+        let debounceTimer;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.toLowerCase().trim();
+
+            if (query.length < 2) {
+                resultsContainer.classList.remove('show');
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                const results = searchIndex.filter(item =>
+                    item.name.toLowerCase().includes(query) ||
+                    item.asin.toLowerCase().includes(query) ||
+                    item.sku.toLowerCase().includes(query) ||
+                    item.brand.toLowerCase().includes(query)
+                );
+
+                this.renderSearchResults(results, resultsContainer);
+            }, 150);
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.classList.remove('show');
+            }
+        });
+
+        // Close on Escape
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                resultsContainer.classList.remove('show');
+                searchInput.blur();
+            }
+        });
+    }
+
+    renderSearchResults(results, container) {
+        if (results.length === 0) {
+            container.innerHTML = '<div class="search-no-results">No products found</div>';
+            container.classList.add('show');
+            return;
+        }
+
+        const html = results.slice(0, 10).map(item => {
+            const brandClass = item.brand.toLowerCase().replace(/\s+/g, '');
+            const brandInitials = item.brand.substring(0, 2).toUpperCase();
+
+            return `
+                <div class="search-result-item" data-asin="${item.asin}">
+                    <div class="search-result-brand ${brandClass}">${brandInitials}</div>
+                    <div class="search-result-info">
+                        <div class="search-result-name">${item.name}</div>
+                        <div class="search-result-meta">
+                            <span class="asin">${item.asin}</span>
+                            ${item.sku ? `<span class="sku">${item.sku}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="search-result-stats">
+                        <div class="search-result-revenue">€${item.revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</div>
+                        <div class="search-result-units">${item.units} units</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+        container.classList.add('show');
+
+        // Add click handlers
+        container.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const asin = item.getAttribute('data-asin');
+                this.showProductDetail(asin);
+                container.classList.remove('show');
+                document.getElementById('globalSearch').value = '';
+            });
+        });
+    }
+
+    showProductDetail(asin) {
+        // Find product in families
+        let product = null;
+        let family = null;
+
+        for (const fam of this.salesData.productFamilies) {
+            const found = fam.children.find(c => c.asin === asin);
+            if (found) {
+                product = found;
+                family = fam;
+                break;
+            }
+        }
+
+        if (product) {
+            const name = family.name + (product.variant !== 'Parent' ? ` - ${product.variant}` : '');
+            this.showToast(`${name}: €${product.revenue.toLocaleString('de-DE')} | ${product.units} units | ${product.margin}% margin`);
+            // Navigate to products page
+            this.navigateTo('products');
+        }
+    }
+
     setupFilters() {
         const orderFilter = document.getElementById('orderStatusFilter');
         if (orderFilter) {
@@ -611,6 +869,68 @@ class Dashboard {
                 <td><span class="status-badge ${order.status}">${order.status}</span></td>
             </tr>
         `).join('');
+    }
+
+    // ===== PRODUCTS GRID =====
+    renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+
+        const brandColors = {
+            'Hoffenbach': { bg: 'linear-gradient(135deg, #6366f1, #8b5cf6)', abbr: 'HF' },
+            'WunderHippo': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', abbr: 'WH' },
+            'SafeMate': { bg: 'linear-gradient(135deg, #10b981, #059669)', abbr: 'SM' }
+        };
+
+        let html = '';
+
+        this.salesData.productFamilies.forEach(family => {
+            const brand = brandColors[family.brand] || { bg: '#64748b', abbr: '??' };
+
+            // Create family group card
+            html += `
+                <div class="product-family" data-parent="${family.parentAsin || 'standalone'}">
+                    <div class="product-family-header">
+                        <div class="brand-badge" style="background: ${brand.bg}">${brand.abbr}</div>
+                        <div class="family-info">
+                            <h4>${family.name}</h4>
+                            <div class="family-meta">
+                                <span class="family-brand">${family.brand}</span>
+                                ${family.parentAsin ? `<span class="family-parent">Parent: ${family.parentAsin}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="family-stats">
+                            <div class="family-revenue">€${family.totalRevenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</div>
+                            <div class="family-units">${family.totalUnits} units</div>
+                        </div>
+                    </div>
+                    <div class="product-variants">
+                        ${family.children.map(child => `
+                            <div class="product-card" data-asin="${child.asin}" data-sku="${child.sku}">
+                                <div class="product-info">
+                                    <div class="variant-name">${child.variant}</div>
+                                    <div class="product-ids">
+                                        <span class="product-asin">ASIN: ${child.asin}</span>
+                                        ${child.sku ? `<span class="product-sku">SKU: ${child.sku}</span>` : ''}
+                                    </div>
+                                    <div class="product-stats">
+                                        <span class="product-price">€${child.price.toFixed(2)}</span>
+                                        <span class="product-sold">${child.units} sold</span>
+                                    </div>
+                                    <div class="product-metrics">
+                                        <span class="metric revenue">€${child.revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                        <span class="metric margin ${child.margin >= 25 ? 'good' : child.margin >= 15 ? 'warning' : 'critical'}">${child.margin}%</span>
+                                        <span class="metric profit">+€${child.profit.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        grid.innerHTML = html;
     }
 
     // ===== CHARTS =====
