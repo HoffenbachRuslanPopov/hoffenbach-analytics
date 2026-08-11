@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Logs - Hoffenbach CRM</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/crm.css">
+    <link rel="stylesheet" href="css/logs.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body class="logs-page">
+    <div class="logs-container">
+        <!-- Header -->
+        <header class="logs-header">
+            <div class="logs-header-left">
+                <a href="crm.html" class="back-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to CRM
+                </a>
+                <div class="logs-title">
+                    <h1>Integration Sync Logs</h1>
+                    <p>Detailed synchronization history and error tracking</p>
+                </div>
+            </div>
+            <div class="logs-header-right">
+                <div class="logs-filters">
+                    <select id="filterIntegration" class="filter-select">
+                        <option value="all">All Integrations</option>
+                        <option value="amazon">Amazon SP-API</option>
+                        <option value="google">Google Sheets</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="success">Success</option>
+                        <option value="error">Error</option>
+                        <option value="warning">Warning</option>
+                    </select>
+                    <select id="filterPeriod" class="filter-select">
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+                <button class="btn-secondary" id="exportLogsBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export Logs
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Summary -->
+        <div class="logs-stats">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalSyncs">156</span>
+                    <span class="stat-label">Total Syncs</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="successCount">152</span>
+                    <span class="stat-label">Successful</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon error">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="errorCount">3</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="warningCount">1</span>
+                    <span class="stat-label">Warnings</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon uptime">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="uptimePercent">97.4%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="logs-table-container">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th class="col-status">Status</th>
+                        <th class="col-timestamp">Timestamp</th>
+                        <th class="col-integration">Integration</th>
+                        <th class="col-action">Action</th>
+                        <th class="col-records">Records</th>
+                        <th class="col-duration">Duration</th>
+                        <th class="col-details">Details</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="logs-pagination">
+            <div class="pagination-info">
+                Showing <span id="showingFrom">1</span>-<span id="showingTo">20</span> of <span id="totalRecords">156</span> logs
+            </div>
+            <div class="pagination-controls">
+                <button class="pagination-btn" id="prevPage" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <span class="pagination-pages" id="paginationPages">
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <span class="pagination-dots">...</span>
+                    <button class="pagination-btn">8</button>
+                </span>
+                <button class="pagination-btn" id="nextPage">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Detail Modal -->
+    <div class="modal-overlay" id="logDetailModal">
+        <div class="modal log-detail-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="log-status-icon" id="modalStatusIcon"></div>
+                    <h3 id="modalTitle">Sync Details</h3>
+                </div>
+                <button class="modal-close" id="closeLogDetailModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="log-detail-grid">
+                    <div class="log-detail-item">
+                        <label>Timestamp</label>
+                        <span id="modalTimestamp">--</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <label>Integration</label>
+                        <span id="modalIntegration">--</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <label>Action</label>
+                        <span id="modalAction">--</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <label>Duration</label>
+                        <span id="modalDuration">--</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <label>Records Processed</label>
+                        <span id="modalRecords">--</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <label>Status</label>
+                        <span id="modalStatus">--</span>
+                    </div>
+                </div>
+
+                <div class="log-detail-section">
+                    <h4>Summary</h4>
+                    <p id="modalSummary">--</p>
+                </div>
+
+                <div class="log-detail-section error-section" id="errorSection" style="display: none;">
+                    <h4>Error Details</h4>
+                    <div class="error-box">
+                        <div class="error-code">
+                            <label>Error Code</label>
+                            <span id="modalErrorCode">--</span>
+                        </div>
+                        <div class="error-message">
+                            <label>Error Message</label>
+                            <pre id="modalErrorMessage">--</pre>
+                        </div>
+                        <div class="error-suggestion">
+                            <label>Suggested Action</label>
+                            <p id="modalErrorSuggestion">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="log-detail-section">
+                    <h4>Technical Log</h4>
+                    <div class="technical-log">
+                        <pre id="modalTechnicalLog">--</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="copyLogBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Log
+                </button>
+                <button class="btn-primary" id="retryBtn" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    Retry Sync
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/sync-logger.js"></script>
+    <script src="js/logs-page.js"></script>
+</body>
+</html>
