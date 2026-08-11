@@ -1972,69 +1972,231 @@ tr:hover td {
     color: var(--text-tertiary);
 }
 
-/* ASIN Analysis Content */
+/* ASIN Analysis Content - 3 column layout */
 .asin-analysis-content {
     display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: var(--spacing-xl);
+    grid-template-columns: 220px 1fr 240px;
+    gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
 }
 
-/* Summary Panel */
-.asin-summary-panel {
-    order: 2;
+/* LEFT: Configuration Panel */
+.asin-config-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-md);
+    height: fit-content;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.config-section {
+    margin-bottom: var(--spacing-md);
+}
+
+.config-section-title {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.config-group {
+    margin-bottom: var(--spacing-xs);
+}
+
+.config-group-header {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.config-group-header:hover {
+    background: var(--bg-hover);
+}
+
+.config-group-header.active {
+    background: var(--primary-500);
+    color: white;
+}
+
+.config-metrics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-sm);
+}
+
+.config-metric-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 6px var(--spacing-md);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.config-metric-item:hover {
+    background: var(--bg-hover);
+}
+
+.config-metric-item.active,
+.config-metric-item:has(input:checked) {
+    color: var(--text-primary);
+}
+
+.config-metric-item input {
+    display: none;
+}
+
+.config-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.config-metric-item input:checked + .config-checkbox {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+}
+
+.config-metric-item input:checked + .config-checkbox::after {
+    content: '';
+    width: 8px;
+    height: 5px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(-45deg);
+    margin-bottom: 2px;
+}
+
+.config-metric-name {
+    flex: 1;
+}
+
+/* CENTER: Chart Area */
+.asin-chart-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Chart Legend */
+.asin-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    min-height: 40px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-line {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+/* Chart Wrapper */
+.asin-chart-wrapper {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     padding: var(--spacing-lg);
-    height: fit-content;
-    position: sticky;
-    top: var(--spacing-lg);
+    min-height: 400px;
+    flex: 1;
 }
 
-.asin-summary-panel h3 {
-    font-size: var(--font-md);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--border-color);
+.asin-chart-wrapper canvas {
+    max-height: 400px;
+}
+
+/* RIGHT: Summary Panel */
+.asin-summary-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-md);
+    height: fit-content;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 .asin-summary-metrics {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: 2px;
 }
 
 .asin-metric {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-xs) 0;
+    padding: 4px 0;
 }
 
-.asin-metric.separator {
-    height: 1px;
-    background: var(--border-color);
-    margin: var(--spacing-xs) 0;
-    padding: 0;
+.asin-metric.sub-item {
+    padding-left: var(--spacing-md);
+}
+
+.asin-metric.sub-item .metric-label {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.asin-metric.sub-item .metric-value {
+    font-size: var(--font-xs);
 }
 
 .asin-metric.highlight {
     background: rgba(99, 102, 241, 0.1);
-    margin: 0 calc(-1 * var(--spacing-md));
+    margin: var(--spacing-xs) calc(-1 * var(--spacing-md));
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-md);
 }
 
 .metric-label {
-    font-size: var(--font-sm);
+    font-size: var(--font-xs);
     color: var(--text-secondary);
 }
 
 .metric-value {
-    font-size: var(--font-sm);
+    font-size: var(--font-xs);
     font-weight: 600;
     color: var(--text-primary);
     font-family: 'SF Mono', monospace;
@@ -2048,70 +2210,10 @@ tr:hover td {
     color: var(--danger);
 }
 
-/* Chart Area */
-.asin-chart-area {
-    order: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-}
-
-/* Metric Toggles */
-.asin-metric-toggles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-}
-
-.metric-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: 6px 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-full);
-    font-size: var(--font-xs);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.metric-toggle:hover {
-    border-color: var(--border-hover);
-}
-
-.metric-toggle.active {
-    background: var(--bg-tertiary);
-    border-color: var(--primary-500);
-    color: var(--text-primary);
-}
-
-.metric-toggle input {
-    display: none;
-}
-
-.toggle-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-/* Chart Wrapper */
-.asin-chart-wrapper {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-lg);
-    min-height: 400px;
-}
-
-.asin-chart-wrapper canvas {
-    max-height: 400px;
+.metric-value.no-data {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-weight: 400;
 }
 
 /* Ad Breakdown */
