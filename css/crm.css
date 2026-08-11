@@ -1,0 +1,258 @@
+/* =============================================
+   CRM SPECIFIC STYLES
+   Extends dashboard.css
+   ============================================= */
+
+/* Nav Section Labels */
+.nav-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.nav-section-label {
+    display: block;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+/* Nav Badges */
+.nav-badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+}
+
+.nav-badge.live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    animation: pulse 2s infinite;
+}
+
+.nav-badge.success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+/* Sync Status in Footer */
+.sync-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.sync-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-yellow);
+}
+
+.sync-dot.synced {
+    background: var(--accent-green);
+}
+
+.sync-dot.syncing {
+    background: var(--accent-yellow);
+    animation: pulse 1s infinite;
+}
+
+.sync-dot.error {
+    background: var(--accent-red);
+}
+
+.sync-text {
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.sync-time {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+/* Chart Legend */
+.chart-legend {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-500);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--spacing-sm);
+}
+
+/* Placeholder Content */
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2xl);
+    background: var(--bg-card);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    text-align: center;
+}
+
+.placeholder-content p {
+    color: var(--text-tertiary);
+}
+
+/* Sources Grid */
+.sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.source-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-fast);
+}
+
+.source-card:hover {
+    border-color: var(--border-hover);
+}
+
+.source-card.connected {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.source-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.source-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--primary-400);
+}
+
+.source-info {
+    flex: 1;
+}
+
+.source-info h4 {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.source-status {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.source-status.connected {
+    color: var(--accent-green);
+}
+
+/* Fee row colors */
+.fee-row.referral td:first-child {
+    border-left: 3px solid #6366f1;
+}
+
+.fee-row.fba td:first-child {
+    border-left: 3px solid #f59e0b;
+}
+
+.fee-row.storage td:first-child {
+    border-left: 3px solid #ef4444;
+}
+
+.fee-row.placement td:first-child {
+    border-left: 3px solid #8b5cf6;
+}
+
+.fee-row.other td:first-child {
+    border-left: 3px solid #64748b;
+}
+
+/* Trend indicators */
+.trend-up {
+    color: var(--accent-green);
+}
+
+.trend-down {
+    color: var(--accent-red);
+}
+
+.trend-neutral {
+    color: var(--text-tertiary);
+}
+
+/* Additional Utility */
+.text-right {
+    text-align: right !important;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav-section-label {
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+
+    .sync-status {
+        display: none;
+    }
+
+    .sources-grid {
+        grid-template-columns: 1fr;
+    }
+}
