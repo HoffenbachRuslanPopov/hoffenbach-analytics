@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki - Hoffenbach Analytics</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <style>
+        /* Wiki Page Styles */
+        .wiki-container {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .wiki-sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            z-index: 100;
+        }
+
+        .wiki-sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .wiki-sidebar-header .logo {
+            width: 40px;
+            height: 40px;
+        }
+
+        .wiki-sidebar-header h2 {
+            font-size: var(--font-lg);
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .wiki-search {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .wiki-search input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: var(--font-sm);
+        }
+
+        .wiki-search input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .wiki-search input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+        }
+
+        .wiki-search svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-tertiary);
+        }
+
+        .wiki-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .wiki-nav li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .wiki-nav a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .wiki-nav a:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .wiki-nav a.active {
+            background: var(--primary-500);
+            color: white;
+        }
+
+        .wiki-nav-section {
+            font-size: var(--font-xs);
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: var(--spacing-md) var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .wiki-back {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: var(--font-sm);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .wiki-back:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .wiki-back svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .wiki-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: var(--spacing-2xl);
+            max-width: 900px;
+        }
+
+        .wiki-header {
+            margin-bottom: var(--spacing-2xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .wiki-header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-sm) 0;
+        }
+
+        .wiki-meta {
+            font-size: var(--font-sm);
+            color: var(--text-tertiary);
+        }
+
+        .wiki-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .wiki-section h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-lg) 0;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .wiki-section h2:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .wiki-section h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+        }
+
+        .wiki-section p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .wiki-section ul, .wiki-section ol {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-md);
+            padding-left: var(--spacing-xl);
+        }
+
+        .wiki-section li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .wiki-screenshot {
+            margin: var(--spacing-lg) 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .wiki-screenshot img {
+            width: 100%;
+            display: block;
+        }
+
+        .wiki-screenshot-caption {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--bg-secondary);
+            font-size: var(--font-sm);
+            color: var(--text-tertiary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .wiki-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-lg) 0;
+            font-size: var(--font-sm);
+        }
+
+        .wiki-table th,
+        .wiki-table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        .wiki-table th {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .wiki-table td {
+            color: var(--text-secondary);
+        }
+
+        .wiki-table tr:hover td {
+            background: var(--bg-hover);
+        }
+
+        .wiki-callout {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .wiki-callout.info {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary-500);
+        }
+
+        .wiki-callout.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .wiki-callout.tip {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+        }
+
+        .wiki-callout p {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .wiki-callout strong {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .wiki-code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9em;
+            color: var(--primary-400);
+        }
+
+        .wiki-roles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .wiki-role-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+        }
+
+        .wiki-role-card h4 {
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-sm) 0;
+            font-size: var(--font-md);
+        }
+
+        .wiki-role-card p {
+            margin: 0;
+            font-size: var(--font-sm);
+        }
+
+        .wiki-steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+        }
+
+        .wiki-steps li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .wiki-steps li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--primary-500);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-sm);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .wiki-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .wiki-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .wiki-content {
+                margin-left: 0;
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wiki-container">
+        <!-- Sidebar -->
+        <aside class="wiki-sidebar">
+            <a href="dashboard.html" class="wiki-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="wiki-sidebar-header">
+                <svg class="logo" viewBox="0 0 48 48" fill="none">
+                    <rect width="48" height="48" rx="12" fill="url(#g1)"/>
+                    <path d="M14 24L20 30L34 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs><linearGradient id="g1" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+                </svg>
+                <h2>Wiki</h2>
+            </div>
+
+            <div class="wiki-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Search..." id="wikiSearch">
+            </div>
+
+            <nav>
+                <ul class="wiki-nav">
+                    <li><a href="#about" class="active">Що це таке</a></li>
+                    <li><a href="#purpose">Навіщо потрібен</a></li>
+                    <li><a href="#roles">Кому і коли</a></li>
+                    <li><a href="#architecture">Як влаштований</a></li>
+
+                    <div class="wiki-nav-section">Вкладки</div>
+                    <li><a href="#page-dashboard">Dashboard</a></li>
+                    <li><a href="#page-sales">Sales</a></li>
+                    <li><a href="#page-products">Products</a></li>
+                    <li><a href="#page-analytics">Analytics</a></li>
+                    <li><a href="#page-orders">Orders</a></li>
+                    <li><a href="#page-automation">Automation</a></li>
+                    <li><a href="#page-sync-logs">Sync Logs</a></li>
+                    <li><a href="#page-settings">Settings</a></li>
+
+                    <div class="wiki-nav-section">Довідка</div>
+                    <li><a href="#metrics">Показники</a></li>
+                    <li><a href="#troubleshooting">Проблеми</a></li>
+                    <li><a href="#glossary">Глосарій</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Content -->
+        <main class="wiki-content">
+            <header class="wiki-header">
+                <h1>Wiki - Hoffenbach Analytics</h1>
+                <div class="wiki-meta">Останнє оновлення: 11 серпня 2026</div>
+            </header>
+
+            <!-- 1. Що це таке -->
+            <section class="wiki-section" id="about">
+                <h2>1. Що це таке</h2>
+                <p>Hoffenbach Analytics — це дашборд для аналізу продажів на Amazon EU. Показує ключові метрики по всіх маркетплейсах в одному місці.</p>
+
+                <h3>Бренди</h3>
+                <ul>
+                    <li><strong>Hoffenbach</strong> — основний бренд, магнітні замки та захисні аксесуари</li>
+                    <li><strong>WunderHippo</strong> — другий бренд</li>
+                    <li>Два нових бренди — готуються до запуску</li>
+                </ul>
+
+                <h3>Країни</h3>
+                <p>Amazon EU — 10 маркетплейсів: DE, UK, ES, IT, FR, NL, SE, BE, IE, PL.</p>
+                <p>Пріоритетні ринки: Німеччина (найбільший оборот), UK, Іспанія.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/dashboard.png" alt="Dashboard">
+                    <div class="wiki-screenshot-caption">Головна сторінка Dashboard з ключовими метриками</div>
+                </div>
+            </section>
+
+            <!-- 2. Навіщо потрібен -->
+            <section class="wiki-section" id="purpose">
+                <h2>2. Навіщо потрібен</h2>
+
+                <h3>Що дашборд закриває</h3>
+                <ul>
+                    <li>Скільки продали сьогодні/цього тижня/місяця</li>
+                    <li>Яка виручка по кожній країні</li>
+                    <li>Які товари продаються найкраще</li>
+                    <li>Скільки залишилось на складі</li>
+                    <li>Статус замовлень</li>
+                    <li>Активність по годинах</li>
+                </ul>
+
+                <h3>Чого дашборд НЕ робить</h3>
+                <ul>
+                    <li>Не рахує маржу та собівартість (COGS)</li>
+                    <li>Не показує рекламні метрики (ACOS, PPC)</li>
+                    <li>Не керує інвентарем (тільки показує залишки)</li>
+                    <li>Не інтегрується з бухгалтерією</li>
+                    <li>Не замінює Seller Central</li>
+                </ul>
+
+                <div class="wiki-callout info">
+                    <p><strong>Важливо</strong><br>Дашборд — це візуалізація даних з Amazon. Для повного аналізу прибутковості використовуйте Sellerboard або ручний розрахунок.</p>
+                </div>
+            </section>
+
+            <!-- 3. Кому і коли -->
+            <section class="wiki-section" id="roles">
+                <h2>3. Кому і коли пригодиться</h2>
+
+                <div class="wiki-roles">
+                    <div class="wiki-role-card">
+                        <h4>Аккаунт-менеджери</h4>
+                        <p>Dashboard, Sales, Products — щодня вранці перевіряти вчорашні продажі та залишки</p>
+                    </div>
+                    <div class="wiki-role-card">
+                        <h4>Логістика</h4>
+                        <p>Products — двічі на тиждень перевіряти Low Stock, планувати поповнення</p>
+                    </div>
+                    <div class="wiki-role-card">
+                        <h4>Бухгалтерія</h4>
+                        <p>Sales, Orders — раз на місяць для звірки виручки по країнах</p>
+                    </div>
+                    <div class="wiki-role-card">
+                        <h4>PPC-менеджер</h4>
+                        <p>Analytics — для аналізу трафіку та конверсій, порівняння з рекламними кампаніями</p>
+                    </div>
+                </div>
+
+                <table class="wiki-table">
+                    <thead>
+                        <tr>
+                            <th>Роль</th>
+                            <th>Вкладки</th>
+                            <th>Частота</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Дмитро, Олег, Руслан</td>
+                            <td>Dashboard, Sales, Products</td>
+                            <td>Щодня</td>
+                        </tr>
+                        <tr>
+                            <td>Олександр (логістика)</td>
+                            <td>Products</td>
+                            <td>2 рази/тиждень</td>
+                        </tr>
+                        <tr>
+                            <td>Андрій (бухгалтерія)</td>
+                            <td>Sales, Orders</td>
+                            <td>1 раз/місяць</td>
+                        </tr>
+                        <tr>
+                            <td>PPC-менеджер</td>
+                            <td>Analytics</td>
+                            <td>За потреби</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 4. Як влаштований -->
+            <section class="wiki-section" id="architecture">
+                <h2>4. Як влаштований</h2>
+
+                <h3>Звідки дані</h3>
+                <ol>
+                    <li><strong>Amazon SP-API</strong> — основне джерело: замовлення, продажі, інвентар</li>
+                    <li><strong>Sellerboard</strong> — експорт звітів для детального аналізу</li>
+                </ol>
+
+                <h3>Шлях даних</h3>
+                <ol class="wiki-steps">
+                    <li>Amazon SP-API віддає дані через EU endpoint</li>
+                    <li>Дані зберігаються локально</li>
+                    <li>Dashboard відображає актуальні метрики</li>
+                    <li>Sync Logs фіксує кожну синхронізацію</li>
+                </ol>
+
+                <div class="wiki-callout warning">
+                    <p><strong>Зараз</strong><br>SP-API не активовано. Дашборд працює з тестовими даними. Після підключення API дані оновлюватимуться автоматично.</p>
+                </div>
+
+                <h3>Технічний стек</h3>
+                <ul>
+                    <li>Frontend: HTML, CSS, JavaScript (vanilla)</li>
+                    <li>Графіки: Chart.js</li>
+                    <li>Хостинг: GitHub Pages</li>
+                    <li>API: Amazon SP-API (EU endpoint), планується</li>
+                </ul>
+            </section>
+
+            <!-- 5. Як користуватися — Dashboard -->
+            <section class="wiki-section" id="page-dashboard">
+                <h2>5. Dashboard</h2>
+                <p>Головна сторінка з оглядом ключових метрик.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/dashboard.png" alt="Dashboard page">
+                    <div class="wiki-screenshot-caption">Dashboard — загальний огляд продажів</div>
+                </div>
+
+                <h3>Елементи</h3>
+
+                <h4>KPI-картки (вгорі)</h4>
+                <table class="wiki-table">
+                    <thead>
+                        <tr><th>Картка</th><th>Що показує</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Total Revenue</td><td>Загальна виручка за період</td></tr>
+                        <tr><td>Total Orders</td><td>Кількість замовлень</td></tr>
+                        <tr><td>Units Sold</td><td>Продано одиниць товару</td></tr>
+                        <tr><td>Avg Order Value</td><td>Середній чек</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Графіки</h4>
+                <ul>
+                    <li><strong>Sales Trend</strong> — динаміка виручки по днях. Перемикачі: 7D, 30D, 90D, YTD</li>
+                    <li><strong>Sales by Country</strong> — розподіл виручки по країнах (кругова діаграма)</li>
+                    <li><strong>Top Products</strong> — найпопулярніші товари по виручці</li>
+                    <li><strong>Orders by Hour</strong> — розподіл замовлень по годинах доби</li>
+                </ul>
+
+                <h3>Як вибрати період</h3>
+                <ol class="wiki-steps">
+                    <li>Натисніть кнопку з датами у хедері (наприклад, "Jan 1 - Aug 6, 2026")</li>
+                    <li>Виберіть пресет: Last 7 days, Last 30 days, Last 90 days, Year to Date, All Time</li>
+                    <li>Або задайте власний діапазон у полях Custom Range і натисніть Apply</li>
+                </ol>
+            </section>
+
+            <!-- Sales -->
+            <section class="wiki-section" id="page-sales">
+                <h2>Sales</h2>
+                <p>Детальна статистика продажів по країнах.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/sales.png" alt="Sales page">
+                    <div class="wiki-screenshot-caption">Sales — продажі по маркетплейсах</div>
+                </div>
+
+                <h3>KPI-картки</h3>
+                <table class="wiki-table">
+                    <thead>
+                        <tr><th>Картка</th><th>Що показує</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Today's Sales</td><td>Виручка за сьогодні</td></tr>
+                        <tr><td>This Week</td><td>Виручка за поточний тиждень</td></tr>
+                        <tr><td>This Month</td><td>Виручка за поточний місяць</td></tr>
+                        <tr><td>Conversion Rate</td><td>Конверсія (перегляд → покупка)</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Таблиця Sales by Country</h3>
+                <p>Колонки:</p>
+                <ul>
+                    <li><strong>COUNTRY</strong> — прапор та назва країни</li>
+                    <li><strong>ORDERS</strong> — кількість замовлень</li>
+                    <li><strong>UNITS</strong> — продано одиниць</li>
+                    <li><strong>REVENUE</strong> — виручка в євро</li>
+                    <li><strong>% OF TOTAL</strong> — частка в загальній виручці (прогрес-бар)</li>
+                </ul>
+
+                <h3>Експорт</h3>
+                <p>Кнопка <strong>Export</strong> — завантажує звіт (функціонал готується).</p>
+            </section>
+
+            <!-- Products -->
+            <section class="wiki-section" id="page-products">
+                <h2>Products</h2>
+                <p>Каталог товарів з пошуком та залишками.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/products.png" alt="Products page">
+                    <div class="wiki-screenshot-caption">Products — каталог товарів</div>
+                </div>
+
+                <h3>Пошук</h3>
+                <p>Поле <strong>"Search by name, SKU, or ASIN..."</strong> — фільтрує картки в реальному часі.</p>
+                <p>Можна шукати за:</p>
+                <ul>
+                    <li>Назвою товару (Magnetic Locks 20+4)</li>
+                    <li>SKU (HF-ML-2004)</li>
+                    <li>ASIN (B07JZCWJMW)</li>
+                </ul>
+
+                <h3>Картка товару</h3>
+                <ul>
+                    <li><strong>Плейсхолдер</strong> — абревіатура (ML, SP, CP...)</li>
+                    <li><strong>Назва</strong> — Magnetic Locks 20+4</li>
+                    <li><strong>ASIN</strong> — унікальний ідентифікатор Amazon</li>
+                    <li><strong>SKU</strong> — внутрішній артикул</li>
+                    <li><strong>Ціна</strong> — поточна ціна продажу</li>
+                    <li><strong>Продано</strong> — кількість за період (342 sold)</li>
+                    <li><strong>Залишок</strong> — In Stock: 245 або Low Stock: 42</li>
+                </ul>
+
+                <div class="wiki-callout tip">
+                    <p><strong>Low Stock</strong><br>Червоний індикатор означає, що залишок менше 50 одиниць. Потрібно планувати поповнення.</p>
+                </div>
+            </section>
+
+            <!-- Analytics -->
+            <section class="wiki-section" id="page-analytics">
+                <h2>Analytics</h2>
+                <p>Аналітика трафіку та поведінки покупців.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/analytics.png" alt="Analytics page">
+                    <div class="wiki-screenshot-caption">Analytics — трафік та конверсії</div>
+                </div>
+
+                <h3>KPI-картки</h3>
+                <table class="wiki-table">
+                    <thead>
+                        <tr><th>Картка</th><th>Що показує</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Page Views</td><td>Кількість переглядів лістингів</td></tr>
+                        <tr><td>Sessions</td><td>Кількість сесій (унікальні відвідувачі)</td></tr>
+                        <tr><td>Avg. Session</td><td>Середня тривалість сесії</td></tr>
+                        <tr><td>Bounce Rate</td><td>Відсоток відмов</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Графіки</h3>
+                <ul>
+                    <li><strong>Traffic Sources</strong> — джерела трафіку: Amazon, Direct, Social (по днях тижня)</li>
+                    <li><strong>Device Types</strong> — розподіл по пристроях: Desktop, Mobile, Tablet</li>
+                </ul>
+            </section>
+
+            <!-- Orders -->
+            <section class="wiki-section" id="page-orders">
+                <h2>Orders</h2>
+                <p>Список усіх замовлень з фільтрацією.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/orders.png" alt="Orders page">
+                    <div class="wiki-screenshot-caption">Orders — управління замовленнями</div>
+                </div>
+
+                <h3>Фільтр статусу</h3>
+                <p>Dropdown <strong>"All Status"</strong> — фільтрує замовлення:</p>
+                <ul>
+                    <li>All — всі замовлення</li>
+                    <li>Shipped — відправлені</li>
+                    <li>Pending — очікують обробки</li>
+                    <li>Delivered — доставлені</li>
+                </ul>
+
+                <h3>Колонки таблиці</h3>
+                <table class="wiki-table">
+                    <thead>
+                        <tr><th>Колонка</th><th>Опис</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ORDER ID</td><td>Номер замовлення Amazon</td></tr>
+                        <tr><td>CUSTOMER</td><td>Ім'я покупця</td></tr>
+                        <tr><td>PRODUCT</td><td>Назва товару</td></tr>
+                        <tr><td>COUNTRY</td><td>Країна (прапор + код)</td></tr>
+                        <tr><td>DATE</td><td>Дата замовлення</td></tr>
+                        <tr><td>AMOUNT</td><td>Сума замовлення</td></tr>
+                        <tr><td>STATUS</td><td>Статус (бейдж)</td></tr>
+                        <tr><td>ACTIONS</td><td>Кнопка перегляду</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Пагінація</h3>
+                <p>Внизу сторінки: "Showing 1-6 of 1,177 orders" — перемикання між сторінками.</p>
+            </section>
+
+            <!-- Automation -->
+            <section class="wiki-section" id="page-automation">
+                <h2>Automation</h2>
+                <p>Налаштування автоматичних правил.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/automation.png" alt="Automation page">
+                    <div class="wiki-screenshot-caption">Automation — автоматизація робочих процесів</div>
+                </div>
+
+                <h3>Доступні правила</h3>
+                <table class="wiki-table">
+                    <thead>
+                        <tr><th>Правило</th><th>Опис</th><th>Статус</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Low Stock Alert</td>
+                            <td>Сповіщення коли залишок падає нижче 50 одиниць</td>
+                            <td>Активне</td>
+                        </tr>
+                        <tr>
+                            <td>Daily Sales Report</td>
+                            <td>Щоденний звіт о 9:00</td>
+                            <td>Активне</td>
+                        </tr>
+                        <tr>
+                            <td>Price Optimization</td>
+                            <td>Автоматичне коригування цін</td>
+                            <td>Неактивне</td>
+                        </tr>
+                        <tr>
+                            <td>Weekly Inventory Sync</td>
+                            <td>Синхронізація інвентарю по маркетплейсах</td>
+                            <td>Неактивне</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Створення правила</h3>
+                <p>Кнопка <strong>+ Create Rule</strong> — функціонал готується.</p>
+            </section>
+
+            <!-- Sync Logs -->
+            <section class="wiki-section" id="page-sync-logs">
+                <h2>Sync Logs</h2>
+                <p>Журнал синхронізації з Amazon API.</p>
+
+                <h3>KPI (вгорі)</h3>
+                <ul>
+                    <li><strong>Total Syncs</strong> — загальна кількість синхронізацій</li>
+                    <li><strong>Successful</strong> — успішні</li>
+                    <li><strong>Failed</strong> — помилки</li>
+                    <li><strong>Warnings</strong> — попередження</li>
+                    <li><strong>Success Rate</strong> — відсоток успішних</li>
+                </ul>
+
+                <h3>Фільтри</h3>
+                <ul>
+                    <li><strong>All Integrations</strong> — Amazon SP-API, Google Sheets</li>
+                    <li><strong>All Status</strong> — Success, Error, Warning</li>
+                    <li><strong>Last 7 Days</strong> — період</li>
+                </ul>
+
+                <h3>Таблиця логів</h3>
+                <p>Колонки: Status, Timestamp, Integration, Action, Records, Duration, Details</p>
+                <p>Натискання на рядок відкриває детальну інформацію про синхронізацію.</p>
+            </section>
+
+            <!-- Settings -->
+            <section class="wiki-section" id="page-settings">
+                <h2>Settings</h2>
+                <p>Налаштування профілю та підключень.</p>
+
+                <div class="wiki-screenshot">
+                    <img src="../screenshots/settings.png" alt="Settings page">
+                    <div class="wiki-screenshot-caption">Settings — налаштування дашборду</div>
+                </div>
+
+                <h3>Блоки налаштувань</h3>
+
+                <h4>Profile Settings</h4>
+                <ul>
+                    <li><strong>Display Name</strong> — ім'я для відображення</li>
+                    <li><strong>Email</strong> — email адреса</li>
+                    <li>Кнопка <strong>Save Changes</strong></li>
+                </ul>
+
+                <h4>Security</h4>
+                <ul>
+                    <li><strong>Current Password</strong> — поточний пароль</li>
+                    <li><strong>New Password</strong> — новий пароль</li>
+                    <li>Кнопка <strong>Change Password</strong></li>
+                </ul>
+
+                <h4>Notifications</h4>
+                <ul>
+                    <li><strong>Email notifications</strong> — сповіщення на email</li>
+                    <li><strong>Order alerts</strong> — сповіщення про нові замовлення</li>
+                    <li><strong>Low stock alerts</strong> — сповіщення про низькі залишки</li>
+                    <li><strong>Daily reports</strong> — щоденні звіти</li>
+                </ul>
+
+                <h4>Amazon SP API</h4>
+                <ul>
+                    <li>Статус підключення: "Connected to EU Marketplace"</li>
+                    <li><strong>Last Sync</strong> — час останньої синхронізації</li>
+                    <li>Кнопка <strong>Sync Now</strong> — запустити синхронізацію вручну</li>
+                </ul>
+            </section>
+
+            <!-- 6. Показники -->
+            <section class="wiki-section" id="metrics">
+                <h2>6. Що означає кожний показник</h2>
+
+                <table class="wiki-table">
+                    <thead>
+                        <tr>
+                            <th>Показник</th>
+                            <th>Як рахується</th>
+                            <th>Джерело</th>
+                            <th>Як читати</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Revenue</td>
+                            <td>Сума всіх продажів за період</td>
+                            <td>Amazon SP-API</td>
+                            <td>Загальна виручка без вирахування комісій</td>
+                        </tr>
+                        <tr>
+                            <td>Total Orders</td>
+                            <td>Кількість унікальних замовлень</td>
+                            <td>Amazon SP-API</td>
+                            <td>Одне замовлення може містити кілька товарів</td>
+                        </tr>
+                        <tr>
+                            <td>Units Sold</td>
+                            <td>Загальна кількість проданих одиниць</td>
+                            <td>Amazon SP-API</td>
+                            <td>Може бути більше ніж Orders</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Order Value</td>
+                            <td>Total Revenue / Total Orders</td>
+                            <td>Розрахунок</td>
+                            <td>Середній чек покупця</td>
+                        </tr>
+                        <tr>
+                            <td>% of Total</td>
+                            <td>(Revenue країни / Total Revenue) * 100</td>
+                            <td>Розрахунок</td>
+                            <td>Частка країни в загальній виручці</td>
+                        </tr>
+                        <tr>
+                            <td>Conversion Rate</td>
+                            <td>Orders / Sessions * 100</td>
+                            <td>Amazon Reports</td>
+                            <td>Скільки відвідувачів купують</td>
+                        </tr>
+                        <tr>
+                            <td>Page Views</td>
+                            <td>Кількість переглядів лістингів</td>
+                            <td>Amazon Reports</td>
+                            <td>Один користувач може переглянути кілька разів</td>
+                        </tr>
+                        <tr>
+                            <td>Sessions</td>
+                            <td>Унікальні візити за 24 години</td>
+                            <td>Amazon Reports</td>
+                            <td>Один користувач = одна сесія на день</td>
+                        </tr>
+                        <tr>
+                            <td>Bounce Rate</td>
+                            <td>Сесії без дій / Всі сесії * 100</td>
+                            <td>Amazon Reports</td>
+                            <td>Нижче = краще (люди залишаються)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 7. Проблеми -->
+            <section class="wiki-section" id="troubleshooting">
+                <h2>7. Що робити, якщо не працює</h2>
+
+                <h3>Дані не оновились</h3>
+                <ol class="wiki-steps">
+                    <li>Перевірте Sync Logs — чи пройшла остання синхронізація</li>
+                    <li>Натисніть кнопку оновлення у хедері (іконка стрілок)</li>
+                    <li>Перевірте Settings → Amazon SP API → Last Sync</li>
+                    <li>Якщо Last Sync старше 4 годин — зверніться до Руслана або Олега</li>
+                </ol>
+
+                <h3>Цифри не сходяться з Seller Central</h3>
+                <ul>
+                    <li>Перевірте обраний період — можливо, різні діапазони дат</li>
+                    <li>Дашборд показує gross revenue (без комісій)</li>
+                    <li>Seller Central може показувати net revenue</li>
+                    <li>Різниця в часових поясах — дашборд в UTC</li>
+                </ul>
+
+                <h3>Сторінка порожня</h3>
+                <ul>
+                    <li>Оновіть сторінку (F5 або Ctrl+R)</li>
+                    <li>Очистіть кеш браузера</li>
+                    <li>Спробуйте інший браузер</li>
+                    <li>Перевірте консоль (F12 → Console) на помилки</li>
+                </ul>
+
+                <h3>Помилка синхронізації</h3>
+                <ol class="wiki-steps">
+                    <li>Відкрийте Sync Logs</li>
+                    <li>Знайдіть останній запис з помилкою (червоний)</li>
+                    <li>Натисніть на рядок для деталей</li>
+                    <li>Скопіюйте Error Code та Error Message</li>
+                    <li>Зверніться до Руслана з цією інформацією</li>
+                </ol>
+
+                <div class="wiki-callout warning">
+                    <p><strong>Контакти підтримки</strong><br>
+                    Технічні питання: Руслан, Олег (автоматизація)<br>
+                    Загальні питання: Дмитро (аккаунт-менеджер)</p>
+                </div>
+            </section>
+
+            <!-- 8. Глосарій -->
+            <section class="wiki-section" id="glossary">
+                <h2>8. Глосарій</h2>
+
+                <table class="wiki-table">
+                    <thead>
+                        <tr>
+                            <th>Термін</th>
+                            <th>Розшифровка</th>
+                            <th>Опис</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ASIN</td>
+                            <td>Amazon Standard Identification Number</td>
+                            <td>Унікальний 10-символьний код товару на Amazon (B07JZCWJMW)</td>
+                        </tr>
+                        <tr>
+                            <td>SKU</td>
+                            <td>Stock Keeping Unit</td>
+                            <td>Внутрішній артикул продавця (HF-ML-2004)</td>
+                        </tr>
+                        <tr>
+                            <td>FBA</td>
+                            <td>Fulfillment by Amazon</td>
+                            <td>Товари зберігаються та відправляються зі складів Amazon</td>
+                        </tr>
+                        <tr>
+                            <td>FBM</td>
+                            <td>Fulfillment by Merchant</td>
+                            <td>Продавець сам відправляє товари</td>
+                        </tr>
+                        <tr>
+                            <td>SP-API</td>
+                            <td>Selling Partner API</td>
+                            <td>API Amazon для отримання даних про продажі</td>
+                        </tr>
+                        <tr>
+                            <td>Referral Fee</td>
+                            <td>—</td>
+                            <td>Комісія Amazon за продаж (зазвичай 15%)</td>
+                        </tr>
+                        <tr>
+                            <td>Parent ASIN</td>
+                            <td>—</td>
+                            <td>Головний ASIN для товарів з варіаціями (колір, розмір)</td>
+                        </tr>
+                        <tr>
+                            <td>Child ASIN</td>
+                            <td>—</td>
+                            <td>Конкретна варіація товару (окремий колір)</td>
+                        </tr>
+                        <tr>
+                            <td>YTD</td>
+                            <td>Year to Date</td>
+                            <td>З початку року до сьогодні</td>
+                        </tr>
+                        <tr>
+                            <td>EU Marketplace</td>
+                            <td>—</td>
+                            <td>Європейський регіон Amazon (10 країн)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Wiki search
+        document.getElementById('wikiSearch').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const sections = document.querySelectorAll('.wiki-section');
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                section.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+
+        // Active nav link
+        const navLinks = document.querySelectorAll('.wiki-nav a');
+        const sections = document.querySelectorAll('.wiki-section');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
