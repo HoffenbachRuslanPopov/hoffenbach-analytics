@@ -1042,43 +1042,104 @@ class Dashboard {
     }
 
     updateAsinSummaryMetrics(data) {
+        // Helper to format with "No data" for null/undefined
+        const fmt = (value, type) => {
+            if (value === null || value === undefined) return 'No data';
+            switch (type) {
+                case 'currency':
+                    return this.formatCurrency(value);
+                case 'percent':
+                    return value.toFixed(1) + '%';
+                case 'percent2':
+                    return value.toFixed(2) + '%';
+                case 'integer':
+                    return Math.round(value).toLocaleString('de-DE');
+                case 'rank':
+                    return '#' + value;
+                default:
+                    return value;
+            }
+        };
+
+        // Check if advertising data is available (from Ads API - currently not connected)
+        const hasAdData = this.hasAdvertisingData(data);
+
+        // Calculate TACOS only if adSpend is available
+        const tacos = hasAdData && data.sales > 0
+            ? (data.adSpend / data.sales) * 100
+            : null;
+
         // Summary metrics - using IDs from HTML
+        // Sales & Orders (from SP-API) - always available
         const metrics = {
-            'asinUnits': data.units || 0,
-            'asinRevenue': this.formatCurrency(data.sales || 0),
-            'asinOrders': data.units || 0, // Approximation
-            'asinRefunds': data.refunds || 0,
-            'asinRefundRate': (data.refundRate || 0).toFixed(2) + '%',
-            'asinAdSpend': this.formatCurrency(data.adSpend || 0),
-            'asinFees': this.formatCurrency(data.amazonFees || 0),
-            'asinCogs': this.formatCurrency(data.cogs || 0),
-            'asinVat': this.formatCurrency(data.vat || 0),
-            'asinProfit': this.formatCurrency(data.netProfit || 0),
-            'asinMargin': (data.margin || 0).toFixed(1) + '%',
-            'asinRoi': (data.roi || 0).toFixed(1) + '%',
-            'asinAcos': (data.acos || 0).toFixed(1) + '%',
-            'asinTacos': ((data.adSpend / data.sales) * 100 || 0).toFixed(1) + '%',
-            'asinAvgPrice': this.formatCurrency(data.avgPrice || 0),
-            'asinBsr': '#' + (data.bsr || 'N/A')
+            'asinUnits': fmt(data.units, 'integer'),
+            'asinRevenue': fmt(data.sales, 'currency'),
+            'asinOrders': fmt(data.units, 'integer'), // Approximation
+            'asinRefunds': fmt(data.refunds, 'integer'),
+            'asinRefundRate': fmt(data.refundRate, 'percent2'),
+
+            // Advertising (from Ads API - show "No data" if not connected)
+            'asinAdSpend': hasAdData ? fmt(data.adSpend, 'currency') : 'No data',
+            'asinAcos': hasAdData ? fmt(data.acos, 'percent') : 'No data',
+            'asinTacos': fmt(tacos, 'percent'),
+
+            // Financial (from SP-API Financial)
+            'asinFees': fmt(data.amazonFees, 'currency'),
+            'asinCogs': fmt(data.cogs, 'currency'),
+            'asinVat': fmt(data.vat, 'currency'),
+
+            // Calculated metrics
+            'asinProfit': fmt(data.netProfit, 'currency'),
+            'asinMargin': fmt(data.margin, 'percent'),
+            'asinRoi': fmt(data.roi, 'percent'),
+
+            // Other
+            'asinAvgPrice': fmt(data.avgPrice, 'currency'),
+            'asinBsr': data.bsr ? fmt(data.bsr, 'rank') : 'No data'
         };
 
         Object.entries(metrics).forEach(([id, value]) => {
             const el = document.getElementById(id);
-            if (el) el.textContent = value;
+            if (el) {
+                el.textContent = value;
+                // Add visual indicator for "No data"
+                if (value === 'No data') {
+                    el.classList.add('no-data');
+                } else {
+                    el.classList.remove('no-data');
+                }
+            }
         });
 
-        // Ad breakdown - using IDs from HTML
+        // Ad breakdown - from Ads API (currently not connected)
         const adBreakdown = {
-            'adPpc': this.formatCurrency(data.adSpendPPC || 0),
-            'adDisplay': this.formatCurrency(data.adSpendDisplay || 0),
-            'adBrands': this.formatCurrency(data.adSpendBrands || 0),
-            'adVideo': this.formatCurrency(data.adSpendVideo || 0)
+            'adPpc': hasAdData ? fmt(data.adSpendPPC, 'currency') : 'No data',
+            'adDisplay': hasAdData ? fmt(data.adSpendDisplay, 'currency') : 'No data',
+            'adBrands': hasAdData ? fmt(data.adSpendBrands, 'currency') : 'No data',
+            'adVideo': hasAdData ? fmt(data.adSpendVideo, 'currency') : 'No data'
         };
 
         Object.entries(adBreakdown).forEach(([id, value]) => {
             const el = document.getElementById(id);
-            if (el) el.textContent = value;
+            if (el) {
+                el.textContent = value;
+                if (value === 'No data') {
+                    el.classList.add('no-data');
+                } else {
+                    el.classList.remove('no-data');
+                }
+            }
         });
+    }
+
+    /**
+     * Check if advertising data is available
+     * Currently returns false - will return true when Ads API is connected
+     */
+    hasAdvertisingData(data) {
+        // TODO: When Amazon Ads API is connected, check if data exists
+        // For now, return false to show "No data" for all ad metrics
+        return false;
     }
 
     formatCurrency(value) {
