@@ -1,0 +1,54 @@
+{
+  "lastUpdated": "2026-08-11T14:30:00Z",
+  "summary": {
+    "totalOrders": 2847,
+    "totalUnits": 3521,
+    "grossRevenue": 45892.34,
+    "totalFees": 12456.78,
+    "netProfit": 33435.56,
+    "dateRange": {
+      "start": "2026-01-01T00:00:00Z",
+      "end": "2026-08-11T14:30:00Z"
+    }
+  },
+  "monthly": [
+    { "month": "2026-01", "orders": 285, "units": 352, "revenue": 4520.00, "fees": 1220.00 },
+    { "month": "2026-02", "orders": 327, "units": 403, "revenue": 5180.00, "fees": 1398.00 },
+    { "month": "2026-03", "orders": 394, "units": 486, "revenue": 6230.00, "fees": 1682.00 },
+    { "month": "2026-04", "orders": 372, "units": 459, "revenue": 5890.00, "fees": 1590.00 },
+    { "month": "2026-05", "orders": 408, "units": 503, "revenue": 6450.00, "fees": 1742.00 },
+    { "month": "2026-06", "orders": 450, "units": 555, "revenue": 7120.00, "fees": 1922.00 },
+    { "month": "2026-07", "orders": 428, "units": 528, "revenue": 6780.00, "fees": 1831.00 },
+    { "month": "2026-08", "orders": 183, "units": 235, "revenue": 3722.34, "fees": 1071.78 }
+  ],
+  "fees": {
+    "referralFee": 6883.85,
+    "fbaFulfillment": 3245.12,
+    "storageFee": 892.45,
+    "placementFee": 534.21,
+    "closingFee": 421.15,
+    "subscriptionFee": 312.00,
+    "otherFees": 168.00
+  },
+  "byCountry": [
+    { "code": "DE", "name": "Germany", "revenue": 18571.79, "orders": 1177 },
+    { "code": "FR", "name": "France", "revenue": 9234.56, "orders": 584 },
+    { "code": "IT", "name": "Italy", "revenue": 6123.45, "orders": 387 },
+    { "code": "ES", "name": "Spain", "revenue": 5432.10, "orders": 343 },
+    { "code": "UK", "name": "United Kingdom", "revenue": 3987.65, "orders": 252 },
+    { "code": "NL", "name": "Netherlands", "revenue": 1542.79, "orders": 104 }
+  ],
+  "products": [
+    { "sku": "D6-QPG9-4J1K", "name": "Magnetic Locks 20+4", "units": 415, "revenue": 12450.00 },
+    { "sku": "C2-KLM8-9N3P", "name": "Cabinet Locks 8-Pack", "units": 658, "revenue": 9870.00 },
+    { "sku": "B8-XYZ2-1A5B", "name": "Drawer Safety Latches", "units": 834, "revenue": 8340.00 },
+    { "sku": "E4-RST7-6C8D", "name": "Corner Protectors Set", "units": 1020, "revenue": 7650.00 },
+    { "sku": "F1-UVW5-2E4F", "name": "Door Stoppers 6-Pack", "units": 360, "revenue": 4320.00 },
+    { "sku": "G7-ABC3-8G0H", "name": "Outlet Covers 24-Pack", "units": 234, "revenue": 3262.34 }
+  ],
+  "reimbursements": [
+    { "date": "2026-07-15", "type": "Lost Inventory", "amount": 145.50, "status": "completed" },
+    { "date": "2026-06-22", "type": "Damaged Item", "amount": 89.99, "status": "completed" },
+    { "date": "2026-05-18", "type": "Customer Return", "amount": 52.30, "status": "completed" }
+  ]
+}
