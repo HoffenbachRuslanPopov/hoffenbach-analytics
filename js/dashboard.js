@@ -68,6 +68,7 @@ class Dashboard {
         this.setupButtons();
         this.setupSearch();
         this.setupFilters();
+        this.setupAsinSearch();
         this.updateKPIs();
         this.loadRecentOrders();
         this.initCharts();
@@ -884,6 +885,593 @@ class Dashboard {
                 }
             });
         }
+    }
+
+    // ===== ASIN ANALYSIS =====
+    setupAsinSearch() {
+        const searchInput = document.getElementById('asinSearchInput');
+        const searchClear = document.getElementById('asinSearchClear');
+        const marketplaceSelect = document.getElementById('marketplaceSelect');
+
+        if (!searchInput) return;
+
+        // Load products metrics data
+        this.loadProductsMetrics();
+
+        // Search on Enter
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const asin = searchInput.value.trim().toUpperCase();
+                if (asin.length === 10 && asin.startsWith('B')) {
+                    this.searchAsin(asin);
+                } else if (asin.length > 0) {
+                    this.showToast('Invalid ASIN format (e.g. B0DV5N35F7)', 'error');
+                }
+            }
+        });
+
+        // Show/hide clear button
+        searchInput.addEventListener('input', () => {
+            searchClear.style.display = searchInput.value.length > 0 ? 'flex' : 'none';
+        });
+
+        // Clear search
+        if (searchClear) {
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                searchInput.focus();
+            });
+        }
+
+        // Marketplace change
+        if (marketplaceSelect) {
+            marketplaceSelect.addEventListener('change', () => {
+                const asin = searchInput.value.trim().toUpperCase();
+                if (asin.length === 10 && this.asinAnalysisVisible) {
+                    this.updateAsinAnalysisForMarketplace();
+                }
+            });
+        }
+    }
+
+    async loadProductsMetrics() {
+        try {
+            const response = await fetch('data/products_metrics.json');
+            this.productsMetrics = await response.json();
+            console.log('Products metrics loaded:', Object.keys(this.productsMetrics.products).length, 'products');
+        } catch (error) {
+            console.error('Failed to load products metrics:', error);
+            this.productsMetrics = { products: {} };
+        }
+    }
+
+    async loadSalesData() {
+        if (this.salesDataRaw) return this.salesDataRaw;
+        try {
+            const response = await fetch('data/sales_data.json');
+            this.salesDataRaw = await response.json();
+            console.log('Sales data loaded');
+            return this.salesDataRaw;
+        } catch (error) {
+            console.error('Failed to load sales data:', error);
+            return null;
+        }
+    }
+
+    searchAsin(asin) {
+        console.log('Searching ASIN:', asin);
+        const overlay = document.getElementById('asinAnalysisOverlay');
+        const loadingOverlay = document.getElementById('asinLoadingOverlay');
+        const notFoundState = document.getElementById('asinNotFound');
+        const container = overlay?.querySelector('.asin-analysis-container');
+
+        if (!overlay) return;
+
+        // Show overlay with loading
+        overlay.classList.add('active');
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        if (notFoundState) notFoundState.style.display = 'none';
+        if (container) container.style.display = 'none';
+        this.asinAnalysisVisible = true;
+
+        // Check if ASIN exists in metrics
+        const productData = this.productsMetrics?.products?.[asin];
+
+        setTimeout(() => {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+            if (productData) {
+                this.showAsinAnalysis(asin, productData);
+            } else {
+                // ASIN not found
+                if (notFoundState) {
+                    notFoundState.style.display = 'flex';
+                    const msgEl = document.getElementById('asinNotFoundMessage');
+                    if (msgEl) {
+                        msgEl.textContent = `No data found for ASIN "${asin}" in the selected marketplace.`;
+                    }
+                }
+            }
+        }, 500);
+    }
+
+    showAsinAnalysis(asin, productData) {
+        const overlay = document.getElementById('asinAnalysisOverlay');
+        const container = overlay.querySelector('.asin-analysis-container');
+        if (container) container.style.display = 'block';
+
+        // Update product header
+        document.getElementById('asinProductName').textContent = productData.name || 'Unknown Product';
+        document.getElementById('asinBadge').textContent = 'ASIN: ' + asin;
+        document.getElementById('skuBadge').textContent = 'SKU: ' + (productData.sku || 'N/A');
+
+        // Load product image from localStorage cache or placeholder
+        const productImageContainer = document.getElementById('asinProductImage');
+        const productImage = productImageContainer?.querySelector('img');
+        const cachedImage = localStorage.getItem(`product_image_${asin}`);
+        if (productImage) {
+            if (cachedImage) {
+                productImage.src = cachedImage;
+                productImage.style.display = 'block';
+            } else {
+                productImage.style.display = 'none';
+            }
+        }
+
+        // Update summary metrics
+        this.updateAsinSummaryMetrics(productData);
+
+        // Setup period selector
+        this.setupAsinPeriodSelector(asin, productData);
+
+        // Setup metric toggles
+        this.setupAsinMetricToggles();
+
+        // Build initial chart
+        this.buildAsinChart(asin, productData, '30d');
+
+        // Build data table
+        this.buildAsinDataTable(asin, productData);
+
+        // Build country breakdown
+        this.buildAsinCountryBreakdown(asin, productData);
+
+        // Setup close button
+        this.setupAsinAnalysisClose();
+    }
+
+    updateAsinSummaryMetrics(data) {
+        // Summary metrics - using IDs from HTML
+        const metrics = {
+            'asinUnits': data.units || 0,
+            'asinRevenue': this.formatCurrency(data.sales || 0),
+            'asinOrders': data.units || 0, // Approximation
+            'asinRefunds': data.refunds || 0,
+            'asinRefundRate': (data.refundRate || 0).toFixed(2) + '%',
+            'asinAdSpend': this.formatCurrency(data.adSpend || 0),
+            'asinFees': this.formatCurrency(data.amazonFees || 0),
+            'asinCogs': this.formatCurrency(data.cogs || 0),
+            'asinVat': this.formatCurrency(data.vat || 0),
+            'asinProfit': this.formatCurrency(data.netProfit || 0),
+            'asinMargin': (data.margin || 0).toFixed(1) + '%',
+            'asinRoi': (data.roi || 0).toFixed(1) + '%',
+            'asinAcos': (data.acos || 0).toFixed(1) + '%',
+            'asinTacos': ((data.adSpend / data.sales) * 100 || 0).toFixed(1) + '%',
+            'asinAvgPrice': this.formatCurrency(data.avgPrice || 0),
+            'asinBsr': '#' + (data.bsr || 'N/A')
+        };
+
+        Object.entries(metrics).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        });
+
+        // Ad breakdown - using IDs from HTML
+        const adBreakdown = {
+            'adPpc': this.formatCurrency(data.adSpendPPC || 0),
+            'adDisplay': this.formatCurrency(data.adSpendDisplay || 0),
+            'adBrands': this.formatCurrency(data.adSpendBrands || 0),
+            'adVideo': this.formatCurrency(data.adSpendVideo || 0)
+        };
+
+        Object.entries(adBreakdown).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        });
+    }
+
+    formatCurrency(value) {
+        return '€' + value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    setupAsinPeriodSelector(asin, productData) {
+        const periodBtns = document.querySelectorAll('.period-btn');
+        this.currentAsinPeriod = 'ytd';
+
+        periodBtns.forEach(btn => {
+            // Remove existing listeners by cloning
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                newBtn.classList.add('active');
+                const period = newBtn.getAttribute('data-period');
+                this.currentAsinPeriod = period;
+                this.buildAsinChart(asin, productData, period);
+                this.updateDateRangeText(period);
+            });
+        });
+    }
+
+    updateDateRangeText(period) {
+        const dateRange = document.getElementById('asinDateRange');
+        if (!dateRange) return;
+
+        const today = new Date();
+        const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const year = today.getFullYear();
+        let text = '';
+
+        switch (period) {
+            case '7d':
+                const d7 = new Date(today);
+                d7.setDate(d7.getDate() - 7);
+                text = `${formatDate(d7)} - ${formatDate(today)}, ${year}`;
+                break;
+            case '30d':
+                const d30 = new Date(today);
+                d30.setDate(d30.getDate() - 30);
+                text = `${formatDate(d30)} - ${formatDate(today)}, ${year}`;
+                break;
+            case '90d':
+                const d90 = new Date(today);
+                d90.setDate(d90.getDate() - 90);
+                text = `${formatDate(d90)} - ${formatDate(today)}, ${year}`;
+                break;
+            case 'ytd':
+                text = `Jan 1 - ${formatDate(today)}, ${year}`;
+                break;
+            case '12m':
+                const d12m = new Date(today);
+                d12m.setFullYear(d12m.getFullYear() - 1);
+                text = `${formatDate(d12m)}, ${year - 1} - ${formatDate(today)}, ${year}`;
+                break;
+        }
+        dateRange.textContent = text;
+    }
+
+    setupAsinMetricToggles() {
+        const toggles = document.querySelectorAll('.metric-toggle');
+        this.activeAsinMetrics = ['units', 'revenue'];
+
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const metric = toggle.getAttribute('data-metric');
+                toggle.classList.toggle('active');
+
+                if (toggle.classList.contains('active')) {
+                    if (!this.activeAsinMetrics.includes(metric)) {
+                        this.activeAsinMetrics.push(metric);
+                    }
+                } else {
+                    this.activeAsinMetrics = this.activeAsinMetrics.filter(m => m !== metric);
+                }
+
+                // Rebuild chart with updated metrics
+                if (this.asinChart) {
+                    this.updateAsinChartDatasets();
+                }
+            });
+        });
+    }
+
+    buildAsinChart(asin, productData, period) {
+        const ctx = document.getElementById('asinAnalysisChart');
+        if (!ctx) return;
+
+        // Destroy existing chart
+        if (this.asinChart) {
+            this.asinChart.destroy();
+        }
+
+        // Generate time-series data based on period
+        const data = this.generateAsinTimeSeriesData(productData, period);
+        const colors = this.getChartColors();
+
+        // Define metric configurations
+        const metricConfigs = {
+            units: { label: 'Units', color: '#6366f1', yAxisID: 'y' },
+            revenue: { label: 'Revenue', color: '#10b981', yAxisID: 'y1' },
+            adSpend: { label: 'Ad Spend', color: '#f59e0b', yAxisID: 'y1' },
+            profit: { label: 'Profit', color: '#8b5cf6', yAxisID: 'y1' },
+            refunds: { label: 'Refunds', color: '#ef4444', yAxisID: 'y' },
+            orders: { label: 'Orders', color: '#06b6d4', yAxisID: 'y' }
+        };
+
+        // Build datasets for active metrics
+        const datasets = this.activeAsinMetrics.map(metric => {
+            const config = metricConfigs[metric];
+            return {
+                label: config.label,
+                data: data[metric] || [],
+                borderColor: config.color,
+                backgroundColor: config.color + '20',
+                fill: false,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 6,
+                yAxisID: config.yAxisID
+            };
+        });
+
+        this.asinChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { color: colors.text, usePointStyle: true }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.text, maxTicksLimit: 10 }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.text }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            color: colors.text,
+                            callback: v => '€' + v
+                        }
+                    }
+                }
+            }
+        });
+
+        this.currentAsinData = { asin, productData, period };
+    }
+
+    generateAsinTimeSeriesData(productData, period) {
+        let days;
+        switch (period) {
+            case '7d': days = 7; break;
+            case '30d': days = 30; break;
+            case '90d': days = 90; break;
+            case 'ytd': days = this.getDaysYTD(); break;
+            case '12m': days = 365; break;
+            default: days = 30;
+        }
+
+        const labels = [];
+        const units = [];
+        const revenue = [];
+        const adSpend = [];
+        const profit = [];
+        const refunds = [];
+        const orders = [];
+
+        const today = new Date();
+        const totalUnits = productData.units || 0;
+        const totalRevenue = productData.sales || 0;
+        const totalAdSpend = productData.adSpend || 0;
+        const totalProfit = productData.netProfit || 0;
+        const totalRefunds = productData.refunds || 0;
+
+        // Distribute totals across days with realistic variation
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+
+            // Format label based on period
+            let label;
+            if (days <= 7) {
+                label = date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+            } else if (days <= 90) {
+                label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            } else {
+                label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            }
+            labels.push(label);
+
+            // Generate daily values with variation
+            const weekday = date.getDay();
+            const weekendMult = (weekday === 0 || weekday === 6) ? 0.7 : 1.1;
+            const randomMult = 0.5 + Math.random();
+            const dayMult = weekendMult * randomMult;
+
+            const dailyUnits = Math.max(0, Math.round((totalUnits / days) * dayMult));
+            const dailyRevenue = Math.max(0, (totalRevenue / days) * dayMult);
+            const dailyAdSpend = Math.max(0, (totalAdSpend / days) * (0.8 + Math.random() * 0.4));
+            const dailyProfit = Math.max(0, (totalProfit / days) * dayMult);
+            const dailyRefunds = Math.random() < (totalRefunds / days) ? 1 : 0;
+
+            units.push(dailyUnits);
+            revenue.push(Math.round(dailyRevenue * 100) / 100);
+            adSpend.push(Math.round(dailyAdSpend * 100) / 100);
+            profit.push(Math.round(dailyProfit * 100) / 100);
+            refunds.push(dailyRefunds);
+            orders.push(dailyUnits); // Approximation
+        }
+
+        return { labels, units, revenue, adSpend, profit, refunds, orders };
+    }
+
+    getDaysYTD() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        return Math.ceil((now - start) / (1000 * 60 * 60 * 24));
+    }
+
+    updateAsinChartDatasets() {
+        if (!this.asinChart || !this.currentAsinData) return;
+        const { asin, productData, period } = this.currentAsinData;
+        this.buildAsinChart(asin, productData, period);
+    }
+
+    buildAsinDataTable(asin, productData) {
+        const tbody = document.getElementById('asinTableBody');
+        if (!tbody) return;
+
+        // Generate daily data for the table matching period
+        const data = this.generateAsinTimeSeriesData(productData, this.currentAsinPeriod || '30d');
+        const rows = [];
+
+        // Calculate daily COGS and Fees based on units
+        const cogsPerUnit = productData.units > 0 ? productData.cogs / productData.units : 0;
+        const feesPerUnit = productData.units > 0 ? productData.amazonFees / productData.units : 0;
+
+        for (let i = data.labels.length - 1; i >= Math.max(0, data.labels.length - 14); i--) {
+            const dailyUnits = data.units[i];
+            const dailyRevenue = data.revenue[i];
+            const dailyAdSpend = data.adSpend[i];
+            const dailyProfit = data.profit[i];
+            const dailyCogs = dailyUnits * cogsPerUnit;
+            const dailyFees = dailyUnits * feesPerUnit;
+            const dailyMargin = dailyRevenue > 0 ? ((dailyProfit / dailyRevenue) * 100).toFixed(1) : '0.0';
+
+            rows.push(`
+                <tr>
+                    <td>${data.labels[i]}</td>
+                    <td>${dailyUnits}</td>
+                    <td>${data.orders[i]}</td>
+                    <td>${this.formatCurrency(dailyRevenue)}</td>
+                    <td>${data.refunds[i]}</td>
+                    <td>${this.formatCurrency(dailyAdSpend)}</td>
+                    <td>${this.formatCurrency(dailyFees)}</td>
+                    <td>${this.formatCurrency(dailyCogs)}</td>
+                    <td class="${dailyProfit >= 0 ? 'positive' : 'negative'}">${this.formatCurrency(dailyProfit)}</td>
+                    <td>${dailyMargin}%</td>
+                </tr>
+            `);
+        }
+
+        tbody.innerHTML = rows.join('');
+    }
+
+    buildAsinCountryBreakdown(asin, productData) {
+        const container = document.getElementById('asinCountryGrid');
+        if (!container) return;
+
+        // Simulated country breakdown based on overall distribution
+        const countries = [
+            { code: 'DE', name: 'Germany', flag: '🇩🇪', share: 0.45 },
+            { code: 'FR', name: 'France', flag: '🇫🇷', share: 0.18 },
+            { code: 'IT', name: 'Italy', flag: '🇮🇹', share: 0.12 },
+            { code: 'ES', name: 'Spain', flag: '🇪🇸', share: 0.10 },
+            { code: 'UK', name: 'United Kingdom', flag: '🇬🇧', share: 0.08 },
+            { code: 'NL', name: 'Netherlands', flag: '🇳🇱', share: 0.04 },
+            { code: 'PL', name: 'Poland', flag: '🇵🇱', share: 0.03 }
+        ];
+
+        const totalSales = productData.sales || 0;
+        const totalUnits = productData.units || 0;
+
+        const cards = countries.map(country => {
+            const countrySales = totalSales * country.share;
+            const countryUnits = Math.round(totalUnits * country.share);
+
+            return `
+                <div class="country-card">
+                    <div class="country-card-header">
+                        <span class="country-flag-large">${country.flag}</span>
+                        <span class="country-name">${country.name}</span>
+                    </div>
+                    <div class="country-card-metrics">
+                        <div class="country-metric">
+                            <span class="country-metric-value">${this.formatCurrency(countrySales)}</span>
+                            <span class="country-metric-label">Revenue</span>
+                        </div>
+                        <div class="country-metric">
+                            <span class="country-metric-value">${countryUnits}</span>
+                            <span class="country-metric-label">Units</span>
+                        </div>
+                        <div class="country-metric">
+                            <span class="country-metric-value">${(country.share * 100).toFixed(0)}%</span>
+                            <span class="country-metric-label">Share</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = cards;
+    }
+
+    setupAsinAnalysisClose() {
+        const closeBtn = document.getElementById('asinCloseBtn');
+        const overlay = document.getElementById('asinAnalysisOverlay');
+
+        const closeOverlay = () => {
+            overlay.classList.remove('active');
+            this.asinAnalysisVisible = false;
+            if (this.asinChart) {
+                this.asinChart.destroy();
+                this.asinChart = null;
+            }
+        };
+
+        if (closeBtn && overlay) {
+            closeBtn.onclick = closeOverlay;
+        }
+
+        // Close on escape key (add only once)
+        if (!this.escapeListenerAdded) {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.asinAnalysisVisible) {
+                    closeOverlay();
+                }
+            });
+            this.escapeListenerAdded = true;
+        }
+
+        // Not found close button
+        const notFoundCloseBtn = document.getElementById('asinNotFoundClose');
+        if (notFoundCloseBtn) {
+            notFoundCloseBtn.onclick = () => {
+                document.getElementById('asinNotFound').style.display = 'none';
+                overlay.classList.remove('active');
+                this.asinAnalysisVisible = false;
+                document.getElementById('asinSearchInput')?.focus();
+            };
+        }
+    }
+
+    updateAsinAnalysisForMarketplace() {
+        const marketplace = document.getElementById('marketplaceSelect')?.value || 'all';
+        this.showToast(`Filtering by: ${marketplace === 'all' ? 'All Marketplaces' : marketplace}`);
+        // In real implementation, would filter data by marketplace
     }
 
     // ===== TOAST =====
