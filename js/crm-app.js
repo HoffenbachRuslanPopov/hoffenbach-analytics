@@ -152,6 +152,9 @@ class CRMApp {
             });
         }
 
+        // Notifications
+        this.setupNotifications();
+
         // Sidebar toggle
         const sidebarToggle = document.getElementById('sidebarToggle');
         if (sidebarToggle && sidebar) {
@@ -697,6 +700,215 @@ class CRMApp {
                 setTimeout(() => toast.remove(), 300);
             }
         }, 4000);
+    }
+
+    // =============================================
+    // NOTIFICATIONS SYSTEM
+    // =============================================
+
+    setupNotifications() {
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const notificationsModal = document.getElementById('notificationsModal');
+        const closeNotificationsModal = document.getElementById('closeNotificationsModal');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        const viewAllLogsBtn = document.getElementById('viewAllLogsBtn');
+
+        // Open modal
+        if (notificationsBtn) {
+            notificationsBtn.addEventListener('click', () => {
+                this.openNotificationsModal();
+            });
+        }
+
+        // Close modal
+        if (closeNotificationsModal) {
+            closeNotificationsModal.addEventListener('click', () => {
+                this.closeNotificationsModal();
+            });
+        }
+
+        // Close on backdrop click
+        if (notificationsModal) {
+            notificationsModal.addEventListener('click', (e) => {
+                if (e.target === notificationsModal) {
+                    this.closeNotificationsModal();
+                }
+            });
+        }
+
+        // Mark all as read
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', () => {
+                if (window.syncLogger) {
+                    window.syncLogger.markAllAsRead();
+                    this.updateNotificationBadge();
+                    this.loadNotifications();
+                    this.showToast('All notifications marked as read', 'success');
+                }
+            });
+        }
+
+        // View all logs
+        if (viewAllLogsBtn) {
+            viewAllLogsBtn.addEventListener('click', () => {
+                window.location.href = 'logs.html';
+            });
+        }
+
+        // Escape key closes modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && notificationsModal?.classList.contains('show')) {
+                this.closeNotificationsModal();
+            }
+        });
+
+        // Listen for new sync logs
+        window.addEventListener('syncLogAdded', () => {
+            this.updateNotificationBadge();
+        });
+
+        window.addEventListener('syncLogsRead', () => {
+            this.updateNotificationBadge();
+        });
+
+        // Initial badge update
+        this.updateNotificationBadge();
+        this.updateNextSyncTime();
+
+        // Update next sync time periodically
+        setInterval(() => this.updateNextSyncTime(), 60000);
+    }
+
+    openNotificationsModal() {
+        const modal = document.getElementById('notificationsModal');
+        if (modal) {
+            this.loadNotifications();
+            this.updateSyncSummary();
+            modal.classList.add('show');
+        }
+    }
+
+    closeNotificationsModal() {
+        const modal = document.getElementById('notificationsModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    updateNotificationBadge() {
+        const badge = document.getElementById('notificationBadge');
+        if (badge && window.syncLogger) {
+            const unreadCount = window.syncLogger.getUnreadCount();
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+    }
+
+    updateNextSyncTime() {
+        const nextSyncEl = document.getElementById('nextSyncTime');
+        if (nextSyncEl && window.syncLogger) {
+            nextSyncEl.textContent = window.syncLogger.getNextSyncTime();
+        }
+    }
+
+    updateSyncSummary() {
+        if (!window.syncLogger) return;
+
+        const stats = window.syncLogger.getStats('24h');
+        const logs = window.syncLogger.getLogs();
+        const lastSuccess = logs.filter(l => l.status === 'success').pop();
+        const lastError = logs.filter(l => l.status === 'error').pop();
+
+        // Update summary stats
+        const successCountEl = document.getElementById('summarySuccessCount');
+        const failedCountEl = document.getElementById('summaryFailedCount');
+
+        if (successCountEl) successCountEl.textContent = stats.success;
+        if (failedCountEl) failedCountEl.textContent = stats.error;
+
+        // Update last sync time
+        const lastSyncEl = document.getElementById('summaryLastSync');
+        if (lastSyncEl && lastSuccess) {
+            lastSyncEl.textContent = window.syncLogger.formatTimestamp(lastSuccess.timestamp);
+        }
+    }
+
+    loadNotifications() {
+        const container = document.getElementById('notificationsList');
+        if (!container || !window.syncLogger) return;
+
+        const notifications = window.syncLogger.getNotifications(10);
+
+        if (notifications.length === 0) {
+            container.innerHTML = `
+                <div class="empty-notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <p>No sync notifications yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = notifications.map(notif => this.renderNotification(notif)).join('');
+
+        // Add click handlers
+        container.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const logId = item.dataset.logId;
+                if (logId) {
+                    window.syncLogger.markAsRead(logId);
+                    this.updateNotificationBadge();
+                    item.classList.remove('unread');
+                }
+            });
+        });
+    }
+
+    renderNotification(notif) {
+        const statusClass = notif.status;
+        const statusIcon = this.getStatusIcon(notif.status);
+        const timeAgo = window.syncLogger.formatTimestamp(notif.timestamp);
+        const unreadClass = notif.read ? '' : 'unread';
+
+        return `
+            <div class="notification-item ${statusClass} ${unreadClass}" data-log-id="${notif.id}">
+                <div class="notification-icon ${statusClass}">
+                    ${statusIcon}
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${notif.action} - ${this.capitalizeFirst(notif.integration)}</div>
+                    <div class="notification-message">${notif.summary}</div>
+                    <div class="notification-time">${timeAgo}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    getStatusIcon(status) {
+        const icons = {
+            success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>`,
+            error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>`,
+            warning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>`
+        };
+        return icons[status] || icons.success;
+    }
+
+    capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 }
 
