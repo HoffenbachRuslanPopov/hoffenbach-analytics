@@ -1042,12 +1042,14 @@ class Dashboard {
     }
 
     updateAsinSummaryMetrics(data) {
-        // Helper to format with "No data" for null/undefined
+        // Helper to format values - returns "No data" for null/undefined
         const fmt = (value, type) => {
             if (value === null || value === undefined) return 'No data';
             switch (type) {
                 case 'currency':
                     return this.formatCurrency(value);
+                case 'currencyNeg':
+                    return '-' + this.formatCurrency(Math.abs(value));
                 case 'percent':
                     return value.toFixed(1) + '%';
                 case 'percent2':
@@ -1061,7 +1063,7 @@ class Dashboard {
             }
         };
 
-        // Check if advertising data is available (from Ads API - currently not connected)
+        // Check if advertising data is available (from Sellerboard or Ads API)
         const hasAdData = this.hasAdvertisingData(data);
 
         // Calculate TACOS only if adSpend is available
@@ -1069,40 +1071,43 @@ class Dashboard {
             ? (data.adSpend / data.sales) * 100
             : null;
 
-        // Summary metrics - using IDs from HTML
-        // Sales & Orders (from SP-API) - always available
+        // All summary metrics
         const metrics = {
-            'asinUnits': fmt(data.units, 'integer'),
+            // Sales & Traffic
             'asinRevenue': fmt(data.sales, 'currency'),
-            'asinOrders': fmt(data.units, 'integer'), // Approximation
+            'asinUnits': fmt(data.units, 'integer'),
             'asinRefunds': fmt(data.refunds, 'integer'),
-            'asinRefundRate': fmt(data.refundRate, 'percent2'),
+            'asinPromo': data.promo ? fmt(data.promo, 'currency') : fmt(0, 'currency'),
 
-            // Advertising (from Ads API - show "No data" if not connected)
-            'asinAdSpend': hasAdData ? fmt(data.adSpend, 'currency') : 'No data',
-            'asinAcos': hasAdData ? fmt(data.acos, 'percent') : 'No data',
-            'asinTacos': fmt(tacos, 'percent'),
+            // Advertising (from Sellerboard or Ads API)
+            'asinAdSpend': hasAdData ? fmt(data.adSpend, 'currencyNeg') : 'No data',
 
-            // Financial (from SP-API Financial)
-            'asinFees': fmt(data.amazonFees, 'currency'),
-            'asinCogs': fmt(data.cogs, 'currency'),
-            'asinVat': fmt(data.vat, 'currency'),
+            // Refund & Fees
+            'asinRefundCost': fmt(data.refundCost, 'currencyNeg'),
+            'asinFees': fmt(data.amazonFees, 'currencyNeg'),
+            'asinCogs': fmt(data.cogs, 'currencyNeg'),
+            'asinVat': fmt(data.vat, 'currencyNeg'),
 
-            // Calculated metrics
+            // Profit metrics
+            'asinGrossProfit': fmt(data.grossProfit, 'currency'),
             'asinProfit': fmt(data.netProfit, 'currency'),
+
+            // Percentage metrics
+            'asinAcos': hasAdData ? fmt(data.acos, 'percent') : 'No data',
+            'asinRefundRate': fmt(data.refundRate, 'percent2'),
             'asinMargin': fmt(data.margin, 'percent'),
             'asinRoi': fmt(data.roi, 'percent'),
 
             // Other
-            'asinAvgPrice': fmt(data.avgPrice, 'currency'),
-            'asinBsr': data.bsr ? fmt(data.bsr, 'rank') : 'No data'
+            'asinBsr': data.bsr ? fmt(data.bsr, 'rank') : 'No data',
+            'asinAvgPrice': fmt(data.avgPrice, 'currency')
         };
 
+        // Update all metric elements
         Object.entries(metrics).forEach(([id, value]) => {
             const el = document.getElementById(id);
             if (el) {
                 el.textContent = value;
-                // Add visual indicator for "No data"
                 if (value === 'No data') {
                     el.classList.add('no-data');
                 } else {
@@ -1111,12 +1116,12 @@ class Dashboard {
             }
         });
 
-        // Ad breakdown - from Ads API (currently not connected)
+        // Ad breakdown by channel
         const adBreakdown = {
-            'adPpc': hasAdData ? fmt(data.adSpendPPC, 'currency') : 'No data',
-            'adDisplay': hasAdData ? fmt(data.adSpendDisplay, 'currency') : 'No data',
-            'adBrands': hasAdData ? fmt(data.adSpendBrands, 'currency') : 'No data',
-            'adVideo': hasAdData ? fmt(data.adSpendVideo, 'currency') : 'No data'
+            'adPpc': hasAdData ? fmt(data.adSpendPPC, 'currencyNeg') : 'No data',
+            'adDisplay': hasAdData ? fmt(data.adSpendDisplay, 'currencyNeg') : 'No data',
+            'adBrands': hasAdData ? fmt(data.adSpendBrands, 'currencyNeg') : 'No data',
+            'adVideo': hasAdData ? fmt(data.adSpendVideo, 'currencyNeg') : 'No data'
         };
 
         Object.entries(adBreakdown).forEach(([id, value]) => {
@@ -1134,12 +1139,12 @@ class Dashboard {
 
     /**
      * Check if advertising data is available
-     * Currently returns false - will return true when Ads API is connected
+     * Returns true if data contains ad metrics (from Sellerboard/existing data)
+     * Will also return true when Amazon Ads API is connected later
      */
     hasAdvertisingData(data) {
-        // TODO: When Amazon Ads API is connected, check if data exists
-        // For now, return false to show "No data" for all ad metrics
-        return false;
+        // Check if adSpend exists and is a valid number (from Sellerboard or Ads API)
+        return data && typeof data.adSpend === 'number' && data.adSpend !== null;
     }
 
     formatCurrency(value) {
@@ -1204,33 +1209,94 @@ class Dashboard {
     }
 
     setupAsinMetricToggles() {
-        const toggles = document.querySelectorAll('.metric-toggle');
-        this.activeAsinMetrics = ['units', 'revenue'];
+        // Get all metric checkboxes from config panel
+        const checkboxes = document.querySelectorAll('.config-metric-item input[type="checkbox"]');
 
-        toggles.forEach(toggle => {
-            toggle.addEventListener('click', () => {
-                const metric = toggle.getAttribute('data-metric');
-                toggle.classList.toggle('active');
+        // Initialize active metrics from checked checkboxes
+        this.activeAsinMetrics = [];
+        this.metricColors = {};
 
-                if (toggle.classList.contains('active')) {
+        checkboxes.forEach(checkbox => {
+            const metric = checkbox.getAttribute('data-metric');
+            const color = checkbox.getAttribute('data-color');
+            this.metricColors[metric] = color;
+
+            if (checkbox.checked) {
+                this.activeAsinMetrics.push(metric);
+            }
+        });
+
+        // Add event listeners
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const metric = checkbox.getAttribute('data-metric');
+                const label = checkbox.closest('.config-metric-item');
+
+                if (checkbox.checked) {
                     if (!this.activeAsinMetrics.includes(metric)) {
                         this.activeAsinMetrics.push(metric);
                     }
+                    label.classList.add('active');
                 } else {
                     this.activeAsinMetrics = this.activeAsinMetrics.filter(m => m !== metric);
+                    label.classList.remove('active');
                 }
 
+                // Update chart legend
+                this.updateChartLegend();
+
                 // Rebuild chart with updated metrics
-                if (this.asinChart) {
-                    this.updateAsinChartDatasets();
+                if (this.currentAsinData) {
+                    const { asin, productData, period } = this.currentAsinData;
+                    this.buildAsinChart(asin, productData, period);
                 }
             });
         });
+
+        // Initial legend update
+        this.updateChartLegend();
+    }
+
+    updateChartLegend() {
+        const legendContainer = document.getElementById('asinChartLegend');
+        if (!legendContainer) return;
+
+        const metricLabels = {
+            sales: 'Sales',
+            units: 'Units Sold',
+            orders: 'Orders',
+            adSpend: 'Ad Spend',
+            refunds: 'Refunds',
+            refundCost: 'Refund Cost',
+            amazonFees: 'Amazon Fees',
+            cogs: 'COGS',
+            vat: 'VAT',
+            grossProfit: 'Gross Profit',
+            netProfit: 'Net Profit',
+            margin: 'Margin',
+            roi: 'ROI',
+            acos: 'ACOS',
+            tacos: 'TACOS'
+        };
+
+        legendContainer.innerHTML = this.activeAsinMetrics.map(metric => {
+            const color = this.metricColors[metric] || '#6366f1';
+            const label = metricLabels[metric] || metric;
+            return `
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: ${color};"></span>
+                    <span>${label}</span>
+                </div>
+            `;
+        }).join('');
     }
 
     buildAsinChart(asin, productData, period) {
         const ctx = document.getElementById('asinAnalysisChart');
         if (!ctx) return;
+
+        // Store current data for rebuilding chart when toggles change
+        this.currentAsinData = { asin, productData, period };
 
         // Destroy existing chart
         if (this.asinChart) {
@@ -1241,31 +1307,59 @@ class Dashboard {
         const data = this.generateAsinTimeSeriesData(productData, period);
         const colors = this.getChartColors();
 
-        // Define metric configurations
+        // Define metric configurations with labels and axis
         const metricConfigs = {
-            units: { label: 'Units', color: '#6366f1', yAxisID: 'y' },
-            revenue: { label: 'Revenue', color: '#10b981', yAxisID: 'y1' },
-            adSpend: { label: 'Ad Spend', color: '#f59e0b', yAxisID: 'y1' },
-            profit: { label: 'Profit', color: '#8b5cf6', yAxisID: 'y1' },
-            refunds: { label: 'Refunds', color: '#ef4444', yAxisID: 'y' },
-            orders: { label: 'Orders', color: '#06b6d4', yAxisID: 'y' }
+            sales: { label: 'Sales', yAxisID: 'y1', isCurrency: true },
+            units: { label: 'Units Sold', yAxisID: 'y', isCurrency: false },
+            orders: { label: 'Orders', yAxisID: 'y', isCurrency: false },
+            adSpend: { label: 'Ad Spend', yAxisID: 'y1', isCurrency: true },
+            refunds: { label: 'Refunds', yAxisID: 'y', isCurrency: false },
+            refundCost: { label: 'Refund Cost', yAxisID: 'y1', isCurrency: true },
+            amazonFees: { label: 'Amazon Fees', yAxisID: 'y1', isCurrency: true },
+            cogs: { label: 'COGS', yAxisID: 'y1', isCurrency: true },
+            vat: { label: 'VAT', yAxisID: 'y1', isCurrency: true },
+            grossProfit: { label: 'Gross Profit', yAxisID: 'y1', isCurrency: true },
+            netProfit: { label: 'Net Profit', yAxisID: 'y1', isCurrency: true },
+            margin: { label: 'Margin', yAxisID: 'y2', isPercent: true },
+            roi: { label: 'ROI', yAxisID: 'y2', isPercent: true },
+            acos: { label: 'ACOS', yAxisID: 'y2', isPercent: true },
+            tacos: { label: 'TACOS', yAxisID: 'y2', isPercent: true }
         };
 
         // Build datasets for active metrics
-        const datasets = this.activeAsinMetrics.map(metric => {
-            const config = metricConfigs[metric];
-            return {
-                label: config.label,
-                data: data[metric] || [],
-                borderColor: config.color,
-                backgroundColor: config.color + '20',
-                fill: false,
-                tension: 0.4,
-                pointRadius: 2,
-                pointHoverRadius: 6,
-                yAxisID: config.yAxisID
-            };
-        });
+        const datasets = this.activeAsinMetrics
+            .filter(metric => metricConfigs[metric])
+            .map(metric => {
+                const config = metricConfigs[metric];
+                const color = this.metricColors[metric] || '#6366f1';
+                return {
+                    label: config.label,
+                    data: data[metric] || [],
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 1,
+                    pointHoverRadius: 5,
+                    borderWidth: 2,
+                    yAxisID: config.yAxisID
+                };
+            });
+
+        // Check if we need percentage axis
+        const hasPercentMetric = this.activeAsinMetrics.some(m =>
+            ['margin', 'roi', 'acos', 'tacos'].includes(m)
+        );
+
+        // Check if we need currency axis
+        const hasCurrencyMetric = this.activeAsinMetrics.some(m =>
+            metricConfigs[m]?.isCurrency
+        );
+
+        // Check if we need units axis
+        const hasUnitsMetric = this.activeAsinMetrics.some(m =>
+            ['units', 'orders', 'refunds'].includes(m)
+        );
 
         this.asinChart = new Chart(ctx, {
             type: 'line',
@@ -1282,46 +1376,68 @@ class Dashboard {
                 },
                 plugins: {
                     legend: {
-                        display: true,
-                        position: 'top',
-                        labels: { color: colors.text, usePointStyle: true }
+                        display: false // Using custom legend
                     },
                     tooltip: {
                         enabled: true,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
                         padding: 12,
-                        cornerRadius: 8
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (context) => {
+                                const metric = this.activeAsinMetrics[context.datasetIndex];
+                                const config = metricConfigs[metric];
+                                let value = context.parsed.y;
+                                if (config?.isCurrency) {
+                                    return `${context.dataset.label}: €${value.toLocaleString('de-DE', {minimumFractionDigits: 2})}`;
+                                } else if (config?.isPercent) {
+                                    return `${context.dataset.label}: ${value.toFixed(1)}%`;
+                                }
+                                return `${context.dataset.label}: ${Math.round(value).toLocaleString('de-DE')}`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
                         grid: { color: colors.grid },
-                        ticks: { color: colors.text, maxTicksLimit: 10 }
+                        ticks: { color: colors.text, maxTicksLimit: 12 }
                     },
                     y: {
                         type: 'linear',
-                        display: true,
+                        display: hasUnitsMetric,
                         position: 'left',
                         grid: { color: colors.grid },
-                        ticks: { color: colors.text }
+                        ticks: { color: colors.text },
+                        title: { display: hasUnitsMetric, text: 'Units', color: colors.text }
                     },
                     y1: {
                         type: 'linear',
-                        display: true,
+                        display: hasCurrencyMetric,
                         position: 'right',
                         grid: { drawOnChartArea: false },
                         ticks: {
                             color: colors.text,
-                            callback: v => '€' + v
-                        }
+                            callback: v => '€' + v.toLocaleString('de-DE')
+                        },
+                        title: { display: hasCurrencyMetric, text: 'EUR', color: colors.text }
+                    },
+                    y2: {
+                        type: 'linear',
+                        display: hasPercentMetric,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            color: colors.text,
+                            callback: v => v + '%'
+                        },
+                        title: { display: hasPercentMetric, text: '%', color: colors.text }
                     }
                 }
             }
         });
-
-        this.currentAsinData = { asin, productData, period };
     }
 
     generateAsinTimeSeriesData(productData, period) {
@@ -1335,20 +1451,39 @@ class Dashboard {
             default: days = 30;
         }
 
-        const labels = [];
-        const units = [];
-        const revenue = [];
-        const adSpend = [];
-        const profit = [];
-        const refunds = [];
-        const orders = [];
+        const data = {
+            labels: [],
+            sales: [],
+            units: [],
+            orders: [],
+            adSpend: [],
+            refunds: [],
+            refundCost: [],
+            amazonFees: [],
+            cogs: [],
+            vat: [],
+            grossProfit: [],
+            netProfit: [],
+            margin: [],
+            roi: [],
+            acos: [],
+            tacos: []
+        };
 
         const today = new Date();
-        const totalUnits = productData.units || 0;
-        const totalRevenue = productData.sales || 0;
-        const totalAdSpend = productData.adSpend || 0;
-        const totalProfit = productData.netProfit || 0;
-        const totalRefunds = productData.refunds || 0;
+
+        // Totals from product data
+        const totals = {
+            units: productData.units || 0,
+            sales: productData.sales || 0,
+            adSpend: productData.adSpend || 0,
+            netProfit: productData.netProfit || 0,
+            refunds: productData.refunds || 0,
+            refundCost: productData.refundCost || 0,
+            amazonFees: productData.amazonFees || 0,
+            cogs: productData.cogs || 0,
+            vat: productData.vat || 0
+        };
 
         // Distribute totals across days with realistic variation
         for (let i = days - 1; i >= 0; i--) {
@@ -1364,29 +1499,52 @@ class Dashboard {
             } else {
                 label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
             }
-            labels.push(label);
+            data.labels.push(label);
 
             // Generate daily values with variation
             const weekday = date.getDay();
             const weekendMult = (weekday === 0 || weekday === 6) ? 0.7 : 1.1;
             const randomMult = 0.5 + Math.random();
             const dayMult = weekendMult * randomMult;
+            const adMult = 0.8 + Math.random() * 0.4;
 
-            const dailyUnits = Math.max(0, Math.round((totalUnits / days) * dayMult));
-            const dailyRevenue = Math.max(0, (totalRevenue / days) * dayMult);
-            const dailyAdSpend = Math.max(0, (totalAdSpend / days) * (0.8 + Math.random() * 0.4));
-            const dailyProfit = Math.max(0, (totalProfit / days) * dayMult);
-            const dailyRefunds = Math.random() < (totalRefunds / days) ? 1 : 0;
+            // Calculate daily values
+            const dailyUnits = Math.max(0, Math.round((totals.units / days) * dayMult));
+            const dailySales = Math.max(0, (totals.sales / days) * dayMult);
+            const dailyAdSpend = Math.max(0, (totals.adSpend / days) * adMult);
+            const dailyRefunds = Math.random() < (totals.refunds / days) ? 1 : 0;
+            const dailyRefundCost = (totals.refundCost / days) * (dailyRefunds > 0 ? 2 : 0.5);
+            const dailyFees = (totals.amazonFees / days) * dayMult;
+            const dailyCogs = (totals.cogs / days) * dayMult;
+            const dailyVat = (totals.vat / days) * dayMult;
 
-            units.push(dailyUnits);
-            revenue.push(Math.round(dailyRevenue * 100) / 100);
-            adSpend.push(Math.round(dailyAdSpend * 100) / 100);
-            profit.push(Math.round(dailyProfit * 100) / 100);
-            refunds.push(dailyRefunds);
-            orders.push(dailyUnits); // Approximation
+            // Calculated metrics
+            const dailyGrossProfit = dailySales - dailyFees - dailyCogs - dailyVat - dailyRefundCost;
+            const dailyNetProfit = dailyGrossProfit - dailyAdSpend;
+            const dailyMargin = dailySales > 0 ? (dailyNetProfit / dailySales) * 100 : 0;
+            const dailyRoi = (dailyCogs + dailyAdSpend) > 0 ? (dailyNetProfit / (dailyCogs + dailyAdSpend)) * 100 : 0;
+            const dailyAcos = dailySales > 0 ? (dailyAdSpend / dailySales) * 100 : 0;
+            const dailyTacos = dailySales > 0 ? (dailyAdSpend / dailySales) * 100 : 0;
+
+            // Push values
+            data.sales.push(Math.round(dailySales * 100) / 100);
+            data.units.push(dailyUnits);
+            data.orders.push(dailyUnits);
+            data.adSpend.push(Math.round(dailyAdSpend * 100) / 100);
+            data.refunds.push(dailyRefunds);
+            data.refundCost.push(Math.round(dailyRefundCost * 100) / 100);
+            data.amazonFees.push(Math.round(dailyFees * 100) / 100);
+            data.cogs.push(Math.round(dailyCogs * 100) / 100);
+            data.vat.push(Math.round(dailyVat * 100) / 100);
+            data.grossProfit.push(Math.round(dailyGrossProfit * 100) / 100);
+            data.netProfit.push(Math.round(dailyNetProfit * 100) / 100);
+            data.margin.push(Math.round(dailyMargin * 10) / 10);
+            data.roi.push(Math.round(dailyRoi * 10) / 10);
+            data.acos.push(Math.round(dailyAcos * 10) / 10);
+            data.tacos.push(Math.round(dailyTacos * 10) / 10);
         }
 
-        return { labels, units, revenue, adSpend, profit, refunds, orders };
+        return data;
     }
 
     getDaysYTD() {
