@@ -190,6 +190,9 @@ class Dashboard {
         const dropdown = document.getElementById('datePickerDropdown');
         const presets = document.querySelectorAll('.date-preset');
         const dateText = document.getElementById('dateRangeText');
+        const customDateFrom = document.getElementById('customDateFrom');
+        const customDateTo = document.getElementById('customDateTo');
+        const applyCustomDate = document.getElementById('applyCustomDate');
 
         if (dateBtn && dropdown) {
             dateBtn.addEventListener('click', (e) => {
@@ -201,6 +204,52 @@ class Dashboard {
                 if (!dropdown.contains(e.target)) {
                     dropdown.classList.remove('show');
                 }
+            });
+        }
+
+        // Set default values for custom date inputs
+        if (customDateFrom && customDateTo) {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            customDateTo.value = today.toISOString().split('T')[0];
+            customDateFrom.value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+
+        // Custom date range apply button
+        if (applyCustomDate) {
+            applyCustomDate.addEventListener('click', () => {
+                const fromDate = customDateFrom ? new Date(customDateFrom.value) : null;
+                const toDate = customDateTo ? new Date(customDateTo.value) : null;
+
+                if (!fromDate || !toDate || isNaN(fromDate) || isNaN(toDate)) {
+                    this.showToast('Please select both dates', 'error');
+                    return;
+                }
+
+                if (fromDate > toDate) {
+                    this.showToast('Start date must be before end date', 'error');
+                    return;
+                }
+
+                // Remove active state from presets
+                presets.forEach(p => p.classList.remove('active'));
+
+                // Calculate days difference
+                const diffTime = Math.abs(toDate - fromDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                // Update date text
+                if (dateText) {
+                    dateText.textContent = `${this.formatDate(fromDate)} - ${this.formatDate(toDate)}`;
+                }
+
+                // Update chart with custom range
+                this.updateSalesTrendChartCustom(fromDate, toDate, diffDays);
+
+                if (dropdown) dropdown.classList.remove('show');
+                this.showToast(`Custom range: ${diffDays} days`);
             });
         }
 
@@ -332,6 +381,36 @@ class Dashboard {
         this.charts.salesTrend.update();
 
         this.showToast(`Showing last ${days} days`);
+    }
+
+    updateSalesTrendChartCustom(fromDate, toDate, days) {
+        if (!this.charts.salesTrend) return;
+
+        const data = this.generateDailyDataForRange(fromDate, toDate, days);
+        this.charts.salesTrend.data.labels = data.labels;
+        this.charts.salesTrend.data.datasets[0].data = data.values;
+        this.charts.salesTrend.update();
+    }
+
+    generateDailyDataForRange(fromDate, toDate, days) {
+        const labels = [];
+        const values = [];
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(fromDate);
+            date.setDate(date.getDate() + i);
+
+            if (date > toDate) break;
+
+            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+            const base = 80 + Math.random() * 120;
+            const weekday = date.getDay();
+            const mult = (weekday === 0 || weekday === 6) ? 0.7 : 1.2;
+            values.push(Math.round(base * mult * 100) / 100);
+        }
+
+        return { labels, values };
     }
 
     // ===== BUTTONS =====
@@ -589,13 +668,35 @@ class Dashboard {
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0,
-                    pointHoverRadius: 6
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: colors.primary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => items[0].label,
+                            label: (item) => `Revenue: €${item.raw.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`
+                        }
+                    }
+                },
                 scales: {
                     x: { grid: { color: colors.grid }, ticks: { color: colors.text, maxTicksLimit: 8 } },
                     y: { grid: { color: colors.grid }, ticks: { color: colors.text, callback: v => '€' + v } }
@@ -609,6 +710,7 @@ class Dashboard {
         if (!ctx) return;
 
         const colors = this.getChartColors();
+        const totalRevenue = this.salesData.byCountry.reduce((sum, c) => sum + c.revenue, 0);
 
         this.charts.country = new Chart(ctx, {
             type: 'doughnut',
@@ -625,7 +727,25 @@ class Dashboard {
                 maintainAspectRatio: false,
                 cutout: '65%',
                 plugins: {
-                    legend: { position: 'right', labels: { color: colors.text, font: { size: 11 }, usePointStyle: true } }
+                    legend: { position: 'right', labels: { color: colors.text, font: { size: 11 }, usePointStyle: true } },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (item) => {
+                                const value = item.raw;
+                                const percent = ((value / totalRevenue) * 100).toFixed(1);
+                                return [
+                                    `Revenue: €${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`,
+                                    `Share: ${percent}%`
+                                ];
+                            }
+                        }
+                    }
                 }
             }
         });
