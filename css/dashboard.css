@@ -904,10 +904,27 @@ tr:hover td {
     margin-bottom: var(--spacing-xs);
 }
 
+.product-ids {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+.product-asin {
+    font-size: var(--font-xs);
+    color: var(--primary-400);
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-weight: 500;
+}
+
 .product-sku {
     font-size: var(--font-xs);
     color: var(--text-tertiary);
-    margin-bottom: var(--spacing-md);
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
 .product-stats {
