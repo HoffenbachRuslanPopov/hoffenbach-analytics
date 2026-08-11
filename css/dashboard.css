@@ -878,12 +878,13 @@ tr:hover td {
 }
 
 .product-image {
-    height: 160px;
-    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    height: 180px;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .product-image img {
