@@ -1665,3 +1665,729 @@ tr:hover td {
 #notificationsBtn {
     position: relative;
 }
+
+/* =============================================
+   ASIN SEARCH BAR
+   ============================================= */
+
+.asin-search-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+    max-width: 500px;
+    margin: 0 var(--spacing-lg);
+}
+
+.asin-search-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.asin-search-icon {
+    position: absolute;
+    left: 12px;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.asin-search-input {
+    width: 100%;
+    padding: 10px 40px 10px 40px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-sm);
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.asin-search-input::placeholder {
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--font-family);
+}
+
+.asin-search-input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.asin-search-clear {
+    position: absolute;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.asin-search-input:not(:placeholder-shown) + .asin-search-clear {
+    opacity: 1;
+}
+
+.asin-search-clear:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.marketplace-select {
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.marketplace-select:focus {
+    outline: none;
+    border-color: var(--primary-500);
+}
+
+/* =============================================
+   ASIN ANALYSIS OVERLAY
+   ============================================= */
+
+.asin-analysis-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 1000;
+    overflow-y: auto;
+    display: none;
+    animation: slideInRight 0.3s ease;
+}
+
+.asin-analysis-overlay.active {
+    display: block;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.asin-analysis-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+}
+
+/* ASIN Header */
+.asin-analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.asin-product-info {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+}
+
+.asin-product-image {
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.asin-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.asin-product-image img[src=""],
+.asin-product-image img:not([src]) {
+    display: none;
+}
+
+.asin-product-image img[src=""]:not([src]) + .asin-image-placeholder,
+.asin-product-image img:not([src]) + .asin-image-placeholder {
+    display: flex;
+}
+
+.asin-image-placeholder {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.asin-image-placeholder svg {
+    width: 40px;
+    height: 40px;
+}
+
+.asin-product-details h2 {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    max-width: 600px;
+}
+
+.asin-product-ids {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.asin-badge,
+.sku-badge,
+.marketplace-badge {
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    font-weight: 500;
+}
+
+.asin-badge {
+    background: var(--primary-500);
+    color: white;
+    font-family: 'SF Mono', monospace;
+}
+
+.sku-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-family: 'SF Mono', monospace;
+}
+
+.marketplace-badge {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.asin-close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.asin-close-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+}
+
+.asin-close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Period Selector */
+.asin-period-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.period-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.period-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.period-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.period-btn.active {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: white;
+}
+
+.period-date-range {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+/* ASIN Analysis Content */
+.asin-analysis-content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Summary Panel */
+.asin-summary-panel {
+    order: 2;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    height: fit-content;
+    position: sticky;
+    top: var(--spacing-lg);
+}
+
+.asin-summary-panel h3 {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.asin-summary-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.asin-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) 0;
+}
+
+.asin-metric.separator {
+    height: 1px;
+    background: var(--border-color);
+    margin: var(--spacing-xs) 0;
+    padding: 0;
+}
+
+.asin-metric.highlight {
+    background: rgba(99, 102, 241, 0.1);
+    margin: 0 calc(-1 * var(--spacing-md));
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.metric-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'SF Mono', monospace;
+}
+
+.metric-value.positive {
+    color: var(--success);
+}
+
+.metric-value.negative {
+    color: var(--danger);
+}
+
+/* Chart Area */
+.asin-chart-area {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* Metric Toggles */
+.asin-metric-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.metric-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.metric-toggle:hover {
+    border-color: var(--border-hover);
+}
+
+.metric-toggle.active {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-500);
+    color: var(--text-primary);
+}
+
+.metric-toggle input {
+    display: none;
+}
+
+.toggle-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Chart Wrapper */
+.asin-chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    min-height: 400px;
+}
+
+.asin-chart-wrapper canvas {
+    max-height: 400px;
+}
+
+/* Ad Breakdown */
+.asin-ad-breakdown {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+}
+
+.asin-ad-breakdown h4 {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.ad-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
+}
+
+.ad-channel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.channel-name {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.channel-value {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--danger);
+    font-family: 'SF Mono', monospace;
+}
+
+/* Data Table */
+.asin-data-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.asin-data-table-container h3 {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.asin-table-scroll {
+    overflow-x: auto;
+}
+
+.asin-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+}
+
+.asin-data-table th,
+.asin-data-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.asin-data-table th:first-child,
+.asin-data-table td:first-child {
+    text-align: left;
+}
+
+.asin-data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+}
+
+.asin-data-table td {
+    color: var(--text-primary);
+    font-family: 'SF Mono', monospace;
+}
+
+.asin-data-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* Country Breakdown */
+.asin-country-breakdown {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+}
+
+.asin-country-breakdown h3 {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.country-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.country-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.country-flag {
+    font-size: 24px;
+}
+
+.country-details {
+    flex: 1;
+}
+
+.country-name {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.country-stats {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.country-revenue {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'SF Mono', monospace;
+}
+
+/* Loading Overlay - inside asin-analysis-overlay */
+.asin-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.asin-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: white;
+}
+
+.asin-loading-spinner svg {
+    width: 50px;
+    height: 50px;
+    color: var(--primary-500);
+}
+
+/* ASIN Not Found - inside asin-analysis-overlay */
+.asin-not-found {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xxl);
+    text-align: center;
+    z-index: 10;
+    display: none;
+    box-shadow: var(--shadow-xl);
+}
+
+.asin-not-found.active {
+    display: block;
+}
+
+.asin-not-found svg {
+    width: 60px;
+    height: 60px;
+    color: var(--warning);
+    margin-bottom: var(--spacing-md);
+}
+
+.asin-not-found h3 {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.asin-not-found p {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .asin-analysis-content {
+        grid-template-columns: 1fr;
+    }
+
+    .asin-summary-panel {
+        order: 1;
+        position: static;
+    }
+
+    .asin-chart-area {
+        order: 2;
+    }
+
+    .ad-breakdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .asin-search-container {
+        display: none;
+    }
+
+    .asin-analysis-container {
+        padding: var(--spacing-md);
+    }
+
+    .asin-product-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .asin-product-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .period-buttons {
+        flex-wrap: wrap;
+    }
+
+    .ad-breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .asin-summary-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .asin-metric.separator {
+        grid-column: span 2;
+    }
+}
