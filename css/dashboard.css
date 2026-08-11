@@ -878,8 +878,8 @@ tr:hover td {
 }
 
 .product-image {
-    height: 180px;
-    background: #fff;
+    height: 160px;
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -893,13 +893,24 @@ tr:hover td {
 }
 
 .product-placeholder {
-    font-size: var(--font-2xl);
-    font-weight: 700;
-    color: var(--text-tertiary);
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.product-placeholder svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.7;
+}
+
+.product-placeholder span {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .product-info {
