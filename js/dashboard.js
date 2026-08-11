@@ -889,22 +889,30 @@ class Dashboard {
 
     // ===== ASIN ANALYSIS =====
     setupAsinSearch() {
+        console.log('Setting up ASIN search...');
         const searchInput = document.getElementById('asinSearchInput');
         const searchClear = document.getElementById('asinSearchClear');
         const marketplaceSelect = document.getElementById('marketplaceSelect');
 
-        if (!searchInput) return;
+        console.log('Search input found:', !!searchInput);
+        if (!searchInput) {
+            console.error('ASIN search input not found!');
+            return;
+        }
 
         // Load products metrics data
         this.loadProductsMetrics();
 
         // Search on Enter
         searchInput.addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.key, 'Value:', searchInput.value);
             if (e.key === 'Enter') {
                 const asin = searchInput.value.trim().toUpperCase();
+                console.log('Enter pressed, ASIN:', asin);
                 if (asin.length === 10 && asin.startsWith('B')) {
                     this.searchAsin(asin);
                 } else if (asin.length > 0) {
+                    console.log('Invalid ASIN format');
                     this.showToast('Invalid ASIN format (e.g. B0DV5N35F7)', 'error');
                 }
             }
