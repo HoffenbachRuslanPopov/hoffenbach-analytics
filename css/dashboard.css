@@ -856,9 +856,10 @@ tr:hover td {
    ============================================= */
 
 .products-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--spacing-lg);
+    max-width: 1200px;
 }
 
 .product-card {
@@ -867,6 +868,7 @@ tr:hover td {
     border-radius: var(--radius-xl);
     overflow: hidden;
     transition: all var(--transition-fast);
+    max-width: 320px;
 }
 
 .product-card:hover {
@@ -876,11 +878,18 @@ tr:hover td {
 }
 
 .product-image {
-    height: 140px;
-    background: var(--bg-tertiary);
+    height: 180px;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: var(--spacing-md);
+}
+
+.product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .product-placeholder {
