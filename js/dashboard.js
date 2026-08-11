@@ -42,12 +42,12 @@ class Dashboard {
                 { code: 'IE', name: 'Ireland', flag: '🇮🇪', revenue: 33.98, orders: 2, units: 3 }
             ],
             products: [
-                { name: 'Magnetic Locks 20+4', sku: 'D6-QPG9-4J1K', price: 29.99, sold: 151, revenue: 4528.49, stock: 245 },
-                { name: 'Socket Protectors 20x', sku: 'SH-G0PF-CSW1', price: 7.99, sold: 362, revenue: 2892.38, stock: 52 },
-                { name: 'Magnetic Locks 12+3', sku: 'XT-KL12-3SET', price: 19.99, sold: 130, revenue: 2598.70, stock: 189 },
-                { name: 'Wall Protector Pads', sku: '9J-VG9Z-P83K', price: 9.99, sold: 168, revenue: 1678.32, stock: 320 },
-                { name: 'Corner Protectors 12x', sku: 'E1-ZMUX-HRSF', price: 9.99, sold: 124, revenue: 1238.76, stock: 18 },
-                { name: 'Door Guard Set', sku: 'DG-4SET-BLK', price: 14.99, sold: 89, revenue: 1334.11, stock: 156 }
+                { name: 'Magnetic Locks 20+4', asin: 'B09K3XHMLP', sku: 'D6-QPG9-4J1K', price: 29.99, sold: 151, revenue: 4528.49, stock: 245 },
+                { name: 'Socket Protectors 20x', asin: 'B09K3YN2WQ', sku: 'SH-G0PF-CSW1', price: 7.99, sold: 362, revenue: 2892.38, stock: 52 },
+                { name: 'Magnetic Locks 12+3', asin: 'B09K3ZR4MN', sku: 'XT-KL12-3SET', price: 19.99, sold: 130, revenue: 2598.70, stock: 189 },
+                { name: 'Wall Protector Pads', asin: 'B09K4ABC12', sku: '9J-VG9Z-P83K', price: 9.99, sold: 168, revenue: 1678.32, stock: 320 },
+                { name: 'Corner Protectors 12x', asin: 'B09K4DEF34', sku: 'E1-ZMUX-HRSF', price: 9.99, sold: 124, revenue: 1238.76, stock: 18 },
+                { name: 'Door Guard Set', asin: 'B09K4GHI56', sku: 'DG-4SET-BLK', price: 14.99, sold: 89, revenue: 1334.11, stock: 156 }
             ],
             recentOrders: [
                 { id: '306-9063696-5426752', product: 'Magnetic Locks 20+4', country: 'DE', flag: '🇩🇪', date: '2026-08-06', amount: 29.99, status: 'shipped' },
@@ -513,12 +513,29 @@ class Dashboard {
         const productSearch = document.getElementById('productSearch');
         if (productSearch) {
             productSearch.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
+                const query = e.target.value.toLowerCase().trim();
+                let matchCount = 0;
+
                 document.querySelectorAll('.product-card').forEach(card => {
                     const name = card.querySelector('h4')?.textContent.toLowerCase() || '';
                     const sku = card.querySelector('.product-sku')?.textContent.toLowerCase() || '';
-                    card.style.display = (name.includes(query) || sku.includes(query)) ? '' : 'none';
+                    const asin = card.querySelector('.product-asin')?.textContent.toLowerCase() || '';
+                    const dataAsin = card.getAttribute('data-asin')?.toLowerCase() || '';
+                    const dataSku = card.getAttribute('data-sku')?.toLowerCase() || '';
+
+                    const matches = name.includes(query) ||
+                                   sku.includes(query) ||
+                                   asin.includes(query) ||
+                                   dataAsin.includes(query) ||
+                                   dataSku.includes(query);
+
+                    card.style.display = matches ? '' : 'none';
+                    if (matches) matchCount++;
                 });
+
+                if (query.length > 0) {
+                    this.showToast(`Found ${matchCount} product${matchCount !== 1 ? 's' : ''}`);
+                }
             });
         }
     }
