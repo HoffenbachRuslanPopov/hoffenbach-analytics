@@ -1,0 +1,176 @@
+# Amazon Sales Data Sync Workflow
+# Runs every 4 hours to fetch sales, fees, and reimbursements
+
+name: Sync Amazon Data
+
+on:
+  schedule:
+    # Run every 4 hours: 02:00, 06:00, 10:00, 14:00, 18:00, 22:00 UTC
+    - cron: '0 2,6,10,14,18,22 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  AMAZON_CLIENT_ID: ${{ secrets.AMAZON_CLIENT_ID }}
+  AMAZON_CLIENT_SECRET: ${{ secrets.AMAZON_CLIENT_SECRET }}
+  AMAZON_REFRESH_TOKEN: ${{ secrets.AMAZON_REFRESH_TOKEN }}
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install node-fetch
+
+      - name: Fetch Amazon Sales Data
+        id: fetch-sales
+        run: |
+          node << 'EOF'
+          const fetch = require('node-fetch');
+
+          const AMAZON_CLIENT_ID = process.env.AMAZON_CLIENT_ID;
+          const AMAZON_CLIENT_SECRET = process.env.AMAZON_CLIENT_SECRET;
+          const AMAZON_REFRESH_TOKEN = process.env.AMAZON_REFRESH_TOKEN;
+
+          const TOKEN_URL = 'https://api.amazon.com/auth/o2/token';
+          const API_ENDPOINT = 'https://sellingpartnerapi-eu.amazon.com';
+
+          const MARKETPLACES = {
+              DE: 'A1PA6795UKMFR9',
+              FR: 'A13V1IB3VIYZZH',
+              IT: 'APJ6JRA9NG5V4',
+              ES: 'A1RKKUPIHCS9HS',
+              NL: 'A1805IZSGTT6HS',
+              PL: 'A1C3SOZRARQ6R3',
+              SE: 'A2NODRKZP88ZB9',
+              BE: 'AMEN7PMS3EDWL',
+              UK: 'A1F83G8C2ARO7P'
+          };
+
+          async function getAccessToken() {
+              const response = await fetch(TOKEN_URL, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                  },
+                  body: new URLSearchParams({
+                      grant_type: 'refresh_token',
+                      refresh_token: AMAZON_REFRESH_TOKEN,
+                      client_id: AMAZON_CLIENT_ID,
+                      client_secret: AMAZON_CLIENT_SECRET
+                  })
+              });
+
+              if (!response.ok) {
+                  throw new Error(`Token request failed: ${response.status}`);
+              }
+
+              const data = await response.json();
+              return data.access_token;
+          }
+
+          async function apiRequest(token, path, params = {}) {
+              const url = new URL(path, API_ENDPOINT);
+              Object.entries(params).forEach(([key, value]) => {
+                  if (value) url.searchParams.append(key, value);
+              });
+
+              const response = await fetch(url.toString(), {
+                  method: 'GET',
+                  headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'x-amz-access-token': token,
+                      'Content-Type': 'application/json'
+                  }
+              });
+
+              if (!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(`API request failed: ${response.status} - ${errorText}`);
+              }
+
+              return response.json();
+          }
+
+          async function main() {
+              console.log('Starting Amazon data sync...');
+
+              try {
+                  // Get access token
+                  const token = await getAccessToken();
+                  console.log('Access token obtained');
+
+                  // Calculate date range (YTD)
+                  const now = new Date();
+                  const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+                  const marketplaceIds = Object.values(MARKETPLACES).join(',');
+
+                  // Fetch orders
+                  console.log('Fetching orders...');
+                  const orders = await apiRequest(token, '/orders/v0/orders', {
+                      MarketplaceIds: marketplaceIds,
+                      CreatedAfter: startOfYear.toISOString(),
+                      OrderStatuses: 'Shipped,Unshipped,PartiallyShipped'
+                  });
+
+                  console.log(`Found ${orders.payload?.Orders?.length || 0} orders`);
+
+                  // Fetch financial events
+                  console.log('Fetching financial events...');
+                  const finances = await apiRequest(token, '/finances/v0/financialEvents', {
+                      PostedAfter: startOfYear.toISOString()
+                  });
+
+                  console.log('Financial events fetched');
+
+                  // Process and save data
+                  const salesData = {
+                      lastUpdated: new Date().toISOString(),
+                      orders: orders.payload?.Orders || [],
+                      financialEvents: finances.payload?.FinancialEvents || {},
+                      summary: {
+                          totalOrders: orders.payload?.Orders?.length || 0,
+                          dateRange: {
+                              start: startOfYear.toISOString(),
+                              end: now.toISOString()
+                          }
+                      }
+                  };
+
+                  // Write to file
+                  const fs = require('fs');
+                  fs.writeFileSync('data/sales_data.json', JSON.stringify(salesData, null, 2));
+
+                  console.log('Data sync completed successfully!');
+
+              } catch (error) {
+                  console.error('Sync failed:', error.message);
+                  process.exit(1);
+              }
+          }
+
+          main();
+          EOF
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/sales_data.json
+          git diff --staged --quiet || git commit -m "Auto-sync: Update Amazon sales data $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
+
+      - name: Report status
+        if: always()
+        run: |
+          echo "Sync completed at $(date -u)"
+          echo "Status: ${{ job.status }}"
