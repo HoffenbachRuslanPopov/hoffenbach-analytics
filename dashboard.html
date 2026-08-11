@@ -193,16 +193,6 @@
                     </div>
                 </div>
 
-                <!-- Global Search -->
-                <div class="global-search">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="globalSearch" placeholder="Search ASIN, SKU, product..." autocomplete="off">
-                    <div class="search-results" id="globalSearchResults"></div>
-                </div>
-
                 <div class="header-actions">
                     <button class="action-btn" id="refreshBtn" title="Refresh data">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -612,9 +602,115 @@
                         </div>
                     </div>
 
-                    <!-- Products Grid - Dynamic from JS -->
-                    <div class="products-grid" id="productsGrid">
-                        <!-- Products will be loaded dynamically -->
+                    <!-- Products Grid -->
+                    <div class="products-grid">
+                        <div class="product-card" data-asin="B07JZCWJMW" data-sku="HF-ML-2004">
+                            <div class="product-image">
+                                <div class="product-placeholder">ML</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Magnetic Locks 20+4</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B07JZCWJMW</span>
+                                    <span class="product-sku">SKU: HF-ML-2004</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€29.99</span>
+                                    <span class="product-sold">342 sold</span>
+                                </div>
+                                <div class="product-stock in-stock">In Stock: 245</div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-asin="B0854MW97N" data-sku="HF-SP-020W">
+                            <div class="product-image">
+                                <div class="product-placeholder">SP</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Socket Protectors 20x</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B0854MW97N</span>
+                                    <span class="product-sku">SKU: HF-SP-020W</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€7.99</span>
+                                    <span class="product-sold">287 sold</span>
+                                </div>
+                                <div class="product-stock in-stock">In Stock: 512</div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-asin="B0933B1NKB" data-sku="HF-CP-012B">
+                            <div class="product-image">
+                                <div class="product-placeholder">CP</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Corner Protectors 12x</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B0933B1NKB</span>
+                                    <span class="product-sku">SKU: HF-CP-012B</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€9.99</span>
+                                    <span class="product-sold">198 sold</span>
+                                </div>
+                                <div class="product-stock in-stock">In Stock: 328</div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-asin="B07PPXKJPQ" data-sku="HF-EG-006M">
+                            <div class="product-image">
+                                <div class="product-placeholder">EG</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Edge Guard 6m</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B07PPXKJPQ</span>
+                                    <span class="product-sku">SKU: HF-EG-006M</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€14.99</span>
+                                    <span class="product-sold">156 sold</span>
+                                </div>
+                                <div class="product-stock low-stock">Low Stock: 42</div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-asin="B08NCRRM6M" data-sku="HF-WP-004W">
+                            <div class="product-image">
+                                <div class="product-placeholder">WP</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Wall Protector Pads</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B08NCRRM6M</span>
+                                    <span class="product-sku">SKU: HF-WP-004W</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€9.99</span>
+                                    <span class="product-sold">134 sold</span>
+                                </div>
+                                <div class="product-stock in-stock">In Stock: 186</div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-asin="B09HK8LJ2Z" data-sku="HF-CL-010X">
+                            <div class="product-image">
+                                <div class="product-placeholder">CL</div>
+                            </div>
+                            <div class="product-info">
+                                <h4>Cabinet Locks 10x</h4>
+                                <div class="product-ids">
+                                    <span class="product-asin">ASIN: B09HK8LJ2Z</span>
+                                    <span class="product-sku">SKU: HF-CL-010X</span>
+                                </div>
+                                <div class="product-stats">
+                                    <span class="product-price">€12.99</span>
+                                    <span class="product-sold">89 sold</span>
+                                </div>
+                                <div class="product-stock in-stock">In Stock: 156</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
