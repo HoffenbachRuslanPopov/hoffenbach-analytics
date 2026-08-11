@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hoffenbach Analytics - Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/dashboard.css?v=2.2">
+    <link rel="stylesheet" href="css/dashboard.css?v=2.3">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1264,36 +1264,160 @@
                     <div class="period-date-range" id="asinDateRange">Jan 1 - Aug 11, 2026</div>
                 </div>
 
-                <!-- Main content: Summary + Chart -->
+                <!-- Main content: Config + Chart + Summary -->
                 <div class="asin-analysis-content">
-                    <!-- Summary metrics (right side) -->
+                    <!-- LEFT: Metrics Configuration Panel (like Sellerboard) -->
+                    <div class="asin-config-panel">
+                        <div class="config-section">
+                            <div class="config-section-title">Configuration</div>
+
+                            <div class="config-group">
+                                <div class="config-group-header active" data-group="account">Account Overview</div>
+                            </div>
+
+                            <div class="config-group">
+                                <div class="config-group-header" data-group="returns">Returns Analysis</div>
+                            </div>
+
+                            <div class="config-group">
+                                <div class="config-group-header" data-group="sales">Sales Analysis</div>
+                            </div>
+                        </div>
+
+                        <div class="config-metrics-list">
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="sales" data-color="#3b82f6">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Sales</span>
+                            </label>
+                            <label class="config-metric-item active">
+                                <input type="checkbox" data-metric="units" data-color="#6366f1" checked>
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Units Sold</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="orders" data-color="#06b6d4">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Orders</span>
+                            </label>
+                            <label class="config-metric-item active">
+                                <input type="checkbox" data-metric="adSpend" data-color="#ef4444" checked>
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Ad Spend</span>
+                            </label>
+                            <label class="config-metric-item active">
+                                <input type="checkbox" data-metric="refunds" data-color="#f97316" checked>
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Refunds</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="refundCost" data-color="#fb923c">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Refund Cost</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="amazonFees" data-color="#a855f7">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Amazon Fees</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="cogs" data-color="#ec4899">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">COGS</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="vat" data-color="#14b8a6">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">VAT</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="grossProfit" data-color="#22c55e">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Gross Profit</span>
+                            </label>
+                            <label class="config-metric-item active">
+                                <input type="checkbox" data-metric="netProfit" data-color="#8b5cf6" checked>
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Net Profit</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="margin" data-color="#0ea5e9">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">Margin</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="roi" data-color="#84cc16">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">ROI</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="acos" data-color="#eab308">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">ACOS</span>
+                            </label>
+                            <label class="config-metric-item">
+                                <input type="checkbox" data-metric="tacos" data-color="#f59e0b">
+                                <span class="config-checkbox"></span>
+                                <span class="config-metric-name">TACOS</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- CENTER: Chart area -->
+                    <div class="asin-chart-area">
+                        <!-- Chart legend (auto-generated from selected metrics) -->
+                        <div class="asin-chart-legend" id="asinChartLegend">
+                            <!-- Dynamic legend items -->
+                        </div>
+
+                        <!-- Chart canvas -->
+                        <div class="asin-chart-wrapper">
+                            <canvas id="asinAnalysisChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Summary metrics panel -->
                     <div class="asin-summary-panel">
-                        <h3>Summary</h3>
                         <div class="asin-summary-metrics">
                             <div class="asin-metric">
-                                <span class="metric-label">Revenue</span>
+                                <span class="metric-label">Sales</span>
                                 <span class="metric-value" id="asinRevenue">€0</span>
                             </div>
                             <div class="asin-metric">
-                                <span class="metric-label">Units Sold</span>
+                                <span class="metric-label">Units</span>
                                 <span class="metric-value" id="asinUnits">0</span>
-                            </div>
-                            <div class="asin-metric">
-                                <span class="metric-label">Orders</span>
-                                <span class="metric-value" id="asinOrders">0</span>
                             </div>
                             <div class="asin-metric">
                                 <span class="metric-label">Refunds</span>
                                 <span class="metric-value" id="asinRefunds">0</span>
                             </div>
                             <div class="asin-metric">
-                                <span class="metric-label">Refund Rate</span>
-                                <span class="metric-value" id="asinRefundRate">0%</span>
+                                <span class="metric-label">Promo</span>
+                                <span class="metric-value negative" id="asinPromo">€0</span>
                             </div>
-                            <div class="asin-metric separator"></div>
                             <div class="asin-metric">
                                 <span class="metric-label">Ad Spend</span>
                                 <span class="metric-value negative" id="asinAdSpend">€0</span>
+                            </div>
+                            <div class="asin-metric sub-item">
+                                <span class="metric-label">PPC</span>
+                                <span class="metric-value negative" id="adPpc">€0</span>
+                            </div>
+                            <div class="asin-metric sub-item">
+                                <span class="metric-label">Display</span>
+                                <span class="metric-value negative" id="adDisplay">€0</span>
+                            </div>
+                            <div class="asin-metric sub-item">
+                                <span class="metric-label">Brands</span>
+                                <span class="metric-value negative" id="adBrands">€0</span>
+                            </div>
+                            <div class="asin-metric sub-item">
+                                <span class="metric-label">Video</span>
+                                <span class="metric-value negative" id="adVideo">€0</span>
+                            </div>
+                            <div class="asin-metric">
+                                <span class="metric-label">Refund Cost</span>
+                                <span class="metric-value negative" id="asinRefundCost">€0</span>
                             </div>
                             <div class="asin-metric">
                                 <span class="metric-label">Amazon Fees</span>
@@ -1307,10 +1431,21 @@
                                 <span class="metric-label">VAT</span>
                                 <span class="metric-value negative" id="asinVat">€0</span>
                             </div>
-                            <div class="asin-metric separator"></div>
+                            <div class="asin-metric">
+                                <span class="metric-label">Gross Profit</span>
+                                <span class="metric-value" id="asinGrossProfit">€0</span>
+                            </div>
                             <div class="asin-metric highlight">
                                 <span class="metric-label">Net Profit</span>
                                 <span class="metric-value positive" id="asinProfit">€0</span>
+                            </div>
+                            <div class="asin-metric">
+                                <span class="metric-label">ACOS</span>
+                                <span class="metric-value" id="asinAcos">0%</span>
+                            </div>
+                            <div class="asin-metric">
+                                <span class="metric-label">Refund Rate</span>
+                                <span class="metric-value" id="asinRefundRate">0%</span>
                             </div>
                             <div class="asin-metric">
                                 <span class="metric-label">Margin</span>
@@ -1321,86 +1456,12 @@
                                 <span class="metric-value" id="asinRoi">0%</span>
                             </div>
                             <div class="asin-metric">
-                                <span class="metric-label">ACOS</span>
-                                <span class="metric-value" id="asinAcos">0%</span>
-                            </div>
-                            <div class="asin-metric">
-                                <span class="metric-label">TACOS</span>
-                                <span class="metric-value" id="asinTacos">0%</span>
-                            </div>
-                            <div class="asin-metric separator"></div>
-                            <div class="asin-metric">
-                                <span class="metric-label">Avg Price</span>
-                                <span class="metric-value" id="asinAvgPrice">€0</span>
-                            </div>
-                            <div class="asin-metric">
                                 <span class="metric-label">BSR</span>
                                 <span class="metric-value" id="asinBsr">#0</span>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Chart area (left side) -->
-                    <div class="asin-chart-area">
-                        <!-- Metric toggles -->
-                        <div class="asin-metric-toggles">
-                            <label class="metric-toggle active" data-metric="units">
-                                <input type="checkbox" checked>
-                                <span class="toggle-dot" style="background: #6366f1;"></span>
-                                Units Sold
-                            </label>
-                            <label class="metric-toggle" data-metric="revenue">
-                                <input type="checkbox">
-                                <span class="toggle-dot" style="background: #10b981;"></span>
-                                Revenue
-                            </label>
-                            <label class="metric-toggle" data-metric="adSpend">
-                                <input type="checkbox">
-                                <span class="toggle-dot" style="background: #ef4444;"></span>
-                                Ad Spend
-                            </label>
-                            <label class="metric-toggle" data-metric="profit">
-                                <input type="checkbox">
-                                <span class="toggle-dot" style="background: #8b5cf6;"></span>
-                                Profit
-                            </label>
-                            <label class="metric-toggle" data-metric="refunds">
-                                <input type="checkbox">
-                                <span class="toggle-dot" style="background: #f59e0b;"></span>
-                                Refunds
-                            </label>
-                            <label class="metric-toggle" data-metric="orders">
-                                <input type="checkbox">
-                                <span class="toggle-dot" style="background: #06b6d4;"></span>
-                                Orders
-                            </label>
-                        </div>
-
-                        <!-- Chart canvas -->
-                        <div class="asin-chart-wrapper">
-                            <canvas id="asinAnalysisChart"></canvas>
-                        </div>
-
-                        <!-- Ad Spend breakdown -->
-                        <div class="asin-ad-breakdown">
-                            <h4>Advertising Breakdown</h4>
-                            <div class="ad-breakdown-grid">
-                                <div class="ad-channel">
-                                    <span class="channel-name">Sponsored Products (PPC)</span>
-                                    <span class="channel-value" id="adPpc">€0</span>
-                                </div>
-                                <div class="ad-channel">
-                                    <span class="channel-name">Sponsored Display</span>
-                                    <span class="channel-value" id="adDisplay">€0</span>
-                                </div>
-                                <div class="ad-channel">
-                                    <span class="channel-name">Sponsored Brands (HSA)</span>
-                                    <span class="channel-value" id="adBrands">€0</span>
-                                </div>
-                                <div class="ad-channel">
-                                    <span class="channel-name">Sponsored Brands Video</span>
-                                    <span class="channel-value" id="adVideo">€0</span>
-                                </div>
+                            <div class="asin-metric">
+                                <span class="metric-label">Avg Price</span>
+                                <span class="metric-value" id="asinAvgPrice">€0</span>
                             </div>
                         </div>
                     </div>
@@ -1447,6 +1508,6 @@
     <script src="js/theme.js?v=2.1"></script>
     <script src="js/auth.js?v=2.1"></script>
     <script src="js/data-providers.js?v=1.0"></script>
-    <script src="js/dashboard.js?v=2.3"></script>
+    <script src="js/dashboard.js?v=2.4"></script>
 </body>
 </html>
