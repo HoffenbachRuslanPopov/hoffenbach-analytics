@@ -894,18 +894,23 @@ class Dashboard {
         const searchClear = document.getElementById('asinSearchClear');
         const marketplaceSelect = document.getElementById('marketplaceSelect');
 
-        console.log('Search input found:', !!searchInput);
+        console.log('Search input found:', !!searchInput, searchInput);
         if (!searchInput) {
             console.error('ASIN search input not found!');
             return;
         }
+
+        // Focus debug
+        searchInput.addEventListener('focus', () => {
+            console.log('ASIN input focused');
+        });
 
         // Load products metrics data
         this.loadProductsMetrics();
 
         // Search on Enter
         searchInput.addEventListener('keydown', (e) => {
-            console.log('Key pressed:', e.key, 'Value:', searchInput.value);
+            console.log('KEYDOWN:', e.key, 'Code:', e.code, 'Value:', searchInput.value);
             if (e.key === 'Enter') {
                 const asin = searchInput.value.trim().toUpperCase();
                 console.log('Enter pressed, ASIN:', asin);
